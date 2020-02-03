@@ -24,11 +24,17 @@
 				<div class="d-flex w-100 justify-content-between">
 					<h6 class="mb-1 symbol text-info">{{stock.symbol}}</h6>
 					<label class="text-muted">
-						<b-spinner small class="align-middle" type="grow" v-show="!stock.detail.price"></b-spinner>
+						<b-spinner
+							small
+							class="align-middle"
+							type="grow"
+							v-show="!stock.detail.price && !containsError"
+						></b-spinner>
+						<div v-show="containsError" class="text-light">No internet&nbsp;</div>
 						<div v-show="stock.detail.price">
 							<b-badge :variant="getBadgeColor(stock.detail)" pill>{{ stock.detail.changePercent }}%</b-badge>&nbsp;
 							<strong class="text-light">{{ stock.detail.price }}</strong>
-                            <small class="text-muted">{{stock.currency }}</small>
+							<small class="text-muted">{{stock.currency }}</small>
 						</div>
 					</label>
 				</div>
@@ -36,31 +42,56 @@
 				<div class="d-flex w-100 justify-content-between">
 					<p class="mb-1 text-muted">{{stock.name}}</p>
 					<small class="text-muted font-italic">{{stock.date}}</small>
+					<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
 				</div>
 
 				<div class="d-flex w-100 justify-content-between text-light">
 					<small class="text-muted">
 						<strong>Open</strong>
 						<br />
-						<b-spinner small class="align-middle" type="grow" v-show="!stock.detail.open"></b-spinner>
+						<b-spinner
+							small
+							class="align-middle"
+							type="grow"
+							v-show="!stock.detail.open && !containsError"
+						></b-spinner>
+						<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
 						<div class="text-light" v-show="stock.detail.open">{{ stock.detail.open }}</div>
 					</small>
 					<small class="text-muted">
 						<strong>High</strong>
 						<br />
-						<b-spinner small class="align-middle" type="grow" v-show="!stock.detail.high"></b-spinner>
+						<b-spinner
+							small
+							class="align-middle"
+							type="grow"
+							v-show="!stock.detail.high && !containsError"
+						></b-spinner>
+						<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
 						<div class="text-light" v-show="stock.detail.high">{{ stock.detail.high }}</div>
 					</small>
 					<small class="text-muted">
 						<strong>Low</strong>
 						<br />
-						<b-spinner small class="align-middle" type="grow" v-show="!stock.detail.low"></b-spinner>
+						<b-spinner
+							small
+							class="align-middle"
+							type="grow"
+							v-show="!stock.detail.low && !containsError"
+						></b-spinner>
+						<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
 						<div class="text-light" v-show="stock.detail.low">{{ stock.detail.low }}</div>
 					</small>
 					<small class="text-muted">
 						<strong>Vol</strong>
 						<br />
-						<b-spinner small class="align-middle" type="grow" v-show="!stock.detail.volume"></b-spinner>
+						<b-spinner
+							small
+							class="align-middle"
+							type="grow"
+							v-show="!stock.detail.volume && !containsError"
+						></b-spinner>
+						<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
 						<div class="text-light" v-show="stock.detail.volume">{{ stock.detail.volume }}</div>
 					</small>
 				</div>
@@ -80,7 +111,8 @@ export default {
 			posts: [],
 			selectedID: null,
 			fields: ["detail"],
-			localStorage
+			localStorage,
+			containsError: false
 		};
 	},
 	methods: {
@@ -100,32 +132,39 @@ export default {
 			}
 		},
 		async getStockDetail(symbol) {
-			const attrib = "Global Quote";
+			try {
+				const attrib = "Global Quote";
 
-			const res = await StocksAPI.GLOBAL_QUOTE(symbol);
-			if (res.Note) {
-				let stock = JSON.parse(localStorage.getItem(symbol));
-				if (stock && stock.detail && stock.detail.open) {
-					const stockOld = this.stocks.find(s => s.symbol === symbol);
-					stockOld.date = stock.date;
-					stockOld.detail = stock.detail;
+				const res = await StocksAPI.GLOBAL_QUOTE(symbol);
+				if (res.Note) {
+					let stock = JSON.parse(localStorage.getItem(symbol));
+					if (stock && stock.detail && stock.detail.open) {
+						const stockOld = this.stocks.find(
+							s => s.symbol === symbol
+						);
+						stockOld.date = stock.date;
+						stockOld.detail = stock.detail;
+					}
+					setTimeout(() => this.getStockDetail(symbol), 60000);
+				} else {
+					const stock = this.stocks.find(s => s.symbol === symbol);
+					stock.date = moment().format("YYYY-MM-DD HH:mm:ss");
+					stock.detail = {
+						open: Number(res[attrib]["02. open"]).toFixed(2),
+						high: Number(res[attrib]["03. high"]).toFixed(2),
+						low: Number(res[attrib]["04. low"]).toFixed(2),
+						price: Number(res[attrib]["05. price"]).toFixed(2),
+						volume: res[attrib]["06. volume"],
+						change: Number(res[attrib]["09. change"]).toFixed(2),
+						changePercent: Number(
+							res[attrib]["10. change percent"].replace("%", "")
+						).toFixed(2)
+					};
+					localStorage.setItem(stock.symbol, JSON.stringify(stock));
 				}
-				setTimeout(() => this.getStockDetail(symbol), 60000);
-			} else {
-				const stock = this.stocks.find(s => s.symbol === symbol);
-				stock.date = moment().format("YYYY-MM-DD HH:mm:ss");
-				stock.detail = {
-					open: Number(res[attrib]["02. open"]).toFixed(2),
-					high: Number(res[attrib]["03. high"]).toFixed(2),
-					low: Number(res[attrib]["04. low"]).toFixed(2),
-					price: Number(res[attrib]["05. price"]).toFixed(2),
-					volume: res[attrib]["06. volume"],
-					change: Number(res[attrib]["09. change"]).toFixed(2),
-					changePercent: Number(
-						res[attrib]["10. change percent"].replace("%", "")
-					).toFixed(2)
-				};
-				localStorage.setItem(stock.symbol, JSON.stringify(stock));
+			} catch (error) {
+				console.error(error);
+				this.containsError = true;
 			}
 		},
 		openOptionsPage() {
