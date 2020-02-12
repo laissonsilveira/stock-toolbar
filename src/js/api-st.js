@@ -106,7 +106,9 @@ export default class StocksAPI {
 	}
 
 	static async GLOBAL_QUOTE(symbol) {
-		const res = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${localStorage.getItem('keyST')}`)
+		const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${localStorage.getItem('keyST')}`;
+		console.log(url);
+		const res = await fetch(url)
 			.then(response => response.json());
 		return res;
 	}

@@ -1,5 +1,5 @@
 <template>
-	<div class="container">
+	<b-container>
 		<b-tabs small fill nav-class="bg-dark" active-nav-item-class="font-weight-bold bg-info">
 			<b-tab title="Stocks" title-link-class="text-light" title-item-class="outline-info" active>
 				<b-list-group>
@@ -36,7 +36,7 @@
 								<div v-show="stock.detail.price">
 									<b-badge :variant="getBadgeColor(stock.detail)" pill>{{ stock.detail.changePercent }}%</b-badge>&nbsp;
 									<strong class="text-light">{{ stock.detail.price }}</strong>
-									<small class="text-muted">{{stock.currency }}</small>
+									<small class="text-muted">{{ stock.currency }}</small>
 								</div>
 							</label>
 						</div>
@@ -116,16 +116,30 @@
 								></b-icon>
 								<div class="text-light" v-show="stock.detail.volume">{{ stock.detail.volume }}</div>
 							</small>
+							<small class="text-muted">
+								<strong>Own</strong>
+								<br />
+								<b-spinner
+									small
+									class="align-middle"
+									type="grow"
+									v-show="!stock.detail.price && !containsError"
+								></b-spinner>
+								<b-icon
+									class="font-weight-bold"
+									v-show="containsError"
+									icon="circle-slash"
+									variant="danger"
+								></b-icon>
+								<div class="text-light font-weight-bold" v-show="stock.detail.price">
+									{{ Number(stock.quantity * stock.detail.price).toFixed(2) }}
+								</div>
+							</small>
 						</div>
 					</b-list-group-item>
 				</b-list-group>
 			</b-tab>
-			<b-tab
-				title="Cryptos"
-				title-link-class="text-light"
-				title-item-class="outline-info"
-				@click="getFoxBitCrypts"
-			>
+			<b-tab title="Cryptos" title-link-class="text-light" title-item-class="outline-info" @click="getFoxBitCrypts">
 				<b-list-group>
 					<b-list-group-item class="bg-dark">
 						<b-button size="sm" block variant="outline-info" @click="openOptionsPage">Go to options</b-button>
@@ -160,23 +174,6 @@
 						</div>
 
 						<div class="d-flex w-100 justify-content-between text-light">
-							<small class="text-muted">
-								<strong>Last</strong>
-								<br />
-								<b-spinner
-									small
-									class="align-middle"
-									type="grow"
-									v-show="!crypto.last && !containsError"
-								></b-spinner>
-								<b-icon
-									class="font-weight-bold"
-									v-show="containsError"
-									icon="circle-slash"
-									variant="danger"
-								></b-icon>
-								<div class="text-light" v-show="crypto.last">{{ crypto.last }}</div>
-							</small>
 							<small class="text-muted">
 								<strong>High</strong>
 								<br />
@@ -228,12 +225,31 @@
 								></b-icon>
 								<div class="text-light" v-show="crypto.vol">{{ crypto.vol }}</div>
 							</small>
+							<small class="text-muted">
+								<strong>Own</strong>
+								<br />
+								<b-spinner
+									small
+									class="align-middle"
+									type="grow"
+									v-show="!crypto.last && !containsError"
+								></b-spinner>
+								<b-icon
+									class="font-weight-bold"
+									v-show="containsError"
+									icon="circle-slash"
+									variant="danger"
+								></b-icon>
+								<div class="text-light font-weight-bold" v-show="crypto.last">
+									{{ Number((crypto.quantity || 0) * crypto.last).toFixed(2) }}
+								</div>
+							</small>
 						</div>
 					</b-list-group-item>
 				</b-list-group>
 			</b-tab>
 		</b-tabs>
-	</div>
+	</b-container>
 </template>
 
 <script>
@@ -280,12 +296,13 @@ export default {
 							s => s.symbol === symbol
 						);
 						stockOld.date = stock.date;
+						stockOld.quantity = stock.quantity;
 						stockOld.detail = stock.detail;
 					}
 					setTimeout(() => this.getStockDetail(symbol), 60000);
 				} else {
 					const stock = this.stocks.find(s => s.symbol === symbol);
-					stock.date = moment().format("YYYY-MM-DD HH:mm:ss");
+					stock.date = moment().format("HH:mm:ss");
 					stock.detail = {
 						open: Number(res[attrib]["02. open"]).toFixed(2),
 						high: Number(res[attrib]["03. high"]).toFixed(2),
@@ -323,12 +340,14 @@ export default {
 					const {
 						"1. symbol": symbol,
 						"2. name": name,
-						"8. currency": currency
+						"8. currency": currency,
+						quantity
 					} = s;
 					const stock = {};
 					stock.symbol = symbol;
 					stock.name = name;
 					stock.currency = currency;
+					stock.quantity = quantity;
 					stock.detail = {};
 
 					this.stocks.push(stock);
