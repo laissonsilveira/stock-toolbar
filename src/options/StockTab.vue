@@ -21,7 +21,7 @@
 				</div>
 			</div>
 		</b-modal>
-        <b-tab title="Stocks" active>
+        <b-tab title="Stocks">
             <b-row>
                 <b-col>
                     <b-form v-on:submit.prevent="onSaveEmail">
@@ -32,13 +32,13 @@
                             <b-input-group>
                                 <b-form-input type="email" v-model="email" placeholder="Enter your e-mail"></b-form-input>
                                 <b-input-group-append>
-                                    <b-button variant="success" type="submit">Save</b-button>
-                                    <b-button id="btn-google" type="button" variant="light">
+                                    <b-button variant="info" type="submit">Save</b-button>
+                                    <!-- <b-button id="btn-google" type="button" variant="light">
                                         <b-img src="../icons/icon_google.png" height="20"></b-img>&nbsp;Sign in with Google
                                     </b-button>
                                     <b-tooltip target="btn-google" triggers="hover">
                                         Use to premium mode
-                                    </b-tooltip>
+                                    </b-tooltip> -->
                                 </b-input-group-append>
                             </b-input-group>
                         </b-form-group>
@@ -97,13 +97,11 @@
                         <template
                             slot="1. symbol"
                             slot-scope="data"
-                            tdClass="symbol"
                         >{{ data.item['1. symbol']|truncate(30) }}</template>
                         <template slot="2. name" slot-scope="data">{{ data.item['2. name']|truncate(50) }}</template>
-                        <template slot="4. region" slot-scope="data">{{ data.item['4. region'] }}</template>
                         <template slot="8. currency" slot-scope="data">{{ data.item['8. currency'] }}</template>
                         <template v-slot:cell(quantity)="data">
-                            <b-form-input v-model="data.item.quantity" @change="onChangeQuantityStock(data.item)" type="number"/>
+                            <b-form-input v-model="data.item.quantity" @change="onChangeQuantityStock(data.item)" type="number" size="sm"/>
                         </template>
                         <template v-slot:cell(actions)="data">
                             <toggle-button
@@ -178,22 +176,20 @@ export default {
                 {
                     key: "2. name",
                     label: "Name",
-                    sortable: true
-                },
-                {
-                    key: "4. region",
-                    label: "Region"
+                    sortable: true,
+                    tdClass: "col-name"
                 },
                 {
                     key: "8. currency",
                     label: "Currency"
                 },
                 {
-                    key: "quantity"
+                    key: "quantity",
+                    tdClass: "col-quantity"
                 },
                 {
                     key: "actions",
-                    tdClass: "actions"
+                    tdClass: "col-actions"
                 }
             ]
         };
@@ -318,3 +314,14 @@ export default {
     }
 };
 </script>
+<style lang="scss">
+.col-actions {
+	min-width: 110px;
+}
+.col-name {
+	min-width: 200px;
+}
+.col-quantity {
+	min-width: 120px;
+}
+</style>

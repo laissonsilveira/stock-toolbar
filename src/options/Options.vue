@@ -42,6 +42,6 @@ body {
 	border-color: gray;
 }
 .actions {
-	width: 110px;
+	min-width: 110px;
 }
 </style>
