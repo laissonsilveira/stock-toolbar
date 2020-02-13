@@ -1,9 +1,34 @@
 <template>
 	<div>
+		<b-modal ref="modalConfirmDelete" hide-footer title="Delete Stock">
+			<div class="container">
+				<div class="row">
+					<p>Are you sure you want to delete this item?</p>
+					<div class="col-md-6 pl-0">
+						<a
+							href="#"
+							v-on:click="deleteItem(cryptoToDelete)"
+							class="btn btn-danger btn-sm btn-block"
+						>Confirm</a>
+					</div>
+					<div class="col-md-6 pr-0">
+						<a
+							href="#"
+							v-on:click="onCloseModalDelete()"
+							class="btn btn-secondary btn-sm btn-block"
+						>Cancel</a>
+					</div>
+				</div>
+			</div>
+		</b-modal>
 		<b-tab title="Cryptos" active>
 			<b-container>
 				<b-row>
-					<b-form-select v-model="exchangeSelected" :options="exchanges"></b-form-select>
+					<b-form-select
+						v-model="selectedCrypto"
+						:options="exchanges"
+						@change="onSelectCrypto(selectedCrypto)"
+					></b-form-select>
 				</b-row>
 				<b-row>
 					<b-table
@@ -30,7 +55,7 @@
 							/>
 						</template>
 						<template v-slot:cell(actions)="data">
-							<a href="#" v-on:click="getID(data.item.exchange, data.item.currency)" class="h4">
+							<a href="#" v-on:click="onDelete(data.item)" class="h4">
 								<b-icon icon="trash" variant="danger"></b-icon>
 							</a>
 						</template>
@@ -51,13 +76,13 @@ export default {
 	name: "CryptoTab",
 	data() {
 		return {
-			exchangeSelected: null,
+			selectedCrypto: null,
 			sortBy: "currency",
 			sortDesc: false,
 			cryptos: [],
 			isBusy: false,
 			filter: null,
-			selectedID: null,
+			cryptoToDelete: null,
 			fields: [
 				{
 					key: "exchange",
@@ -69,11 +94,12 @@ export default {
 				},
 				{
 					key: "quantity",
-					tdClass: "col-quantity"
+					tdClass: "col-quantity-crypto"
 				},
 				{
 					key: "actions",
-					tdClass: "col-actions"
+                    label: "",
+					tdClass: "text-right"
 				}
 			],
 			exchanges: [
@@ -134,72 +160,87 @@ export default {
 					value: { exchange: "Walltime", currency: "BRLXBTC" },
 					text: "Walltime - BRL/BTC"
 				}
-			],
-			methods: {
-				toggleBusy() {
-					this.isBusy = !this.isBusy;
-				},
-				getID: function(exchange, currency) {
-					// this.toggleBusy();
-					// this.selectedID = id;
-					// this.$refs.modalConfirmDelete.show();
-				},
-				deleteItem: function(symbol) {
-					// const doDelete = arr => {
-					// 	const indexStock = arr.findIndex(
-					// 		s => s["1. symbol"] === symbol
-					// 	);
-					// 	if (indexStock > -1) {
-					// 		arr.splice(indexStock, 1)[0];
-					// 		localStorage.setItem(
-					// 			"stocksST",
-					// 			JSON.stringify(arr)
-					// 		);
-					// 	}
-					// };
-					// const stocks = JSON.parse(localStorage.getItem("stocksST"));
-					// doDelete(stocks);
-					// doDelete(this.stocks);
-					// localStorage.removeItem(symbol);
-					// this.onCloseModalDelete();
-				},
-				onCloseModalDelete: function() {
-					// this.$refs.modalConfirmDelete.hide();
-					// this.toggleBusy();
-					// this.$refs.table.refresh();
-				},
-				onChangeQuantityCrypto: function(stockItem) {
-					// const symbol = stockItem["1. symbol"];
-					// const stocks = JSON.parse(localStorage.getItem("stocksST"));
-					// const indexStock = stocks.findIndex(
-					// 	s => s["1. symbol"] === symbol
-					// );
-					// if (indexStock > -1) {
-					// 	const stockDeleted = stocks.splice(indexStock, 1)[0];
-					// 	stockDeleted.quantity = Number(stockItem.quantity);
-					// 	stocks.push(stockDeleted);
-					// 	localStorage.setItem(
-					// 		"stocksST",
-					// 		JSON.stringify(stocks)
-					// 	);
-					// }
-				},
-				showAlert(msg, variant = "danger") {
-					this.$bvToast.toast(msg, {
-						variant,
-						solid: true,
-						toaster: "b-toaster-top-center",
-						title: chrome.i18n.getMessage("name_extension")
-					});
-				}
-			},
-			mounted() {
-				// if (localStorage.stocksST) {
-				// 	this.stocks = JSON.parse(localStorage.getItem("stocksST"));
-				// 	this.totalRows = this.stocks.length;
-				// }
-			}
+			]
 		};
+	},
+	methods: {
+		toggleBusy() {
+			this.isBusy = !this.isBusy;
+		},
+		onDelete: function(cryptoToDelete) {
+			this.toggleBusy();
+			this.cryptoToDelete = cryptoToDelete;
+			this.$refs.modalConfirmDelete.show();
+		},
+		deleteItem: function(cryptoToDelete) {
+			const doDelete = arr => {
+				const indexCrypto = arr.findIndex(
+					s =>
+						s.exchange === cryptoToDelete.exchange &&
+						s.currency === cryptoToDelete.currency
+				);
+				if (indexCrypto > -1) {
+					arr.splice(indexCrypto, 1)[0];
+					localStorage.setItem("cryptosST", JSON.stringify(arr));
+				}
+			};
+			const cryptos = JSON.parse(localStorage.getItem("cryptosST"));
+			doDelete(cryptos);
+			doDelete(this.cryptos);
+			this.onCloseModalDelete();
+		},
+		onCloseModalDelete: function() {
+			this.$refs.modalConfirmDelete.hide();
+			this.toggleBusy();
+			this.$refs.table.refresh();
+		},
+		onSelectCrypto: function(selectedCrypto) {
+			const cryptos = JSON.parse(localStorage.getItem("cryptosST"));
+			const indexCrypto = cryptos.findIndex(
+				c =>
+					c.exchange === selectedCrypto.exchange &&
+					c.currency === selectedCrypto.currency
+			);
+			if (indexCrypto === -1) {
+				selectedCrypto.quantity = Number(0);
+				cryptos.push(selectedCrypto);
+				localStorage.setItem("cryptosST", JSON.stringify(cryptos));
+				this.cryptos = cryptos;
+				this.selectedCrypto = null;
+			}
+		},
+		onChangeQuantityCrypto: function(selectedCrypto) {
+			const cryptos = JSON.parse(localStorage.getItem("cryptosST"));
+			const indexCrypto = cryptos.findIndex(
+				c =>
+					c.exchange === selectedCrypto.exchange &&
+					c.currency === selectedCrypto.currency
+			);
+			if (indexCrypto > -1) {
+				const cryptoDeleted = cryptos.splice(indexCrypto, 1)[0];
+				cryptoDeleted.quantity = Number(selectedCrypto.quantity);
+				cryptos.push(cryptoDeleted);
+				localStorage.setItem("cryptosST", JSON.stringify(cryptos));
+			}
+		},
+		showAlert(msg, variant = "danger") {
+			this.$bvToast.toast(msg, {
+				variant,
+				solid: true,
+				toaster: "b-toaster-top-center",
+				title: chrome.i18n.getMessage("name_extension")
+			});
+		}
+	},
+	mounted() {
+		if (localStorage.cryptosST) {
+			this.cryptos = JSON.parse(localStorage.getItem("cryptosST"));
+		}
 	}
 };
 </script>
+<style lang="scss">
+.col-quantity-crypto {
+	width: 90px;
+}
+</style>

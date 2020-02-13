@@ -17,19 +17,6 @@ export default {
 	components: {
 		StockTab,
 		CryptoTab
-	},
-	methods: {
-		onChangeQuantityStock: function(stockItem) {
-			const symbol = stockItem["1. symbol"];
-			const stocks = JSON.parse(localStorage.getItem("stocksST"));
-			const indexStock = stocks.findIndex(s => s["1. symbol"] === symbol);
-			if (indexStock > -1) {
-				const stockDeleted = stocks.splice(indexStock, 1)[0];
-				stockDeleted.quantity = Number(stockItem.quantity);
-				stocks.push(stockDeleted);
-				localStorage.setItem("stocksST", JSON.stringify(stocks));
-			}
-		}
 	}
 };
 </script>

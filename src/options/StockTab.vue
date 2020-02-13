@@ -110,7 +110,7 @@
                                 v-model="data.item.isEnabled"
                                 :sync="true"
                             />
-                            <a href="#" v-on:click="getID(data.item['1. symbol'])" class="h4">
+                            <a href="#" v-on:click="onDelete(data.item['1. symbol'])" class="h4">
                                 <b-icon icon="trash" variant="danger"></b-icon>
                             </a>
                         </template>
@@ -177,7 +177,7 @@ export default {
                     key: "2. name",
                     label: "Name",
                     sortable: true,
-                    tdClass: "col-name"
+                    tdClass: "col-name-stock"
                 },
                 {
                     key: "8. currency",
@@ -185,11 +185,12 @@ export default {
                 },
                 {
                     key: "quantity",
-                    tdClass: "col-quantity"
+                    tdClass: "col-quantity-stock"
                 },
                 {
                     key: "actions",
-                    tdClass: "col-actions"
+                    label: "",
+                    tdClass: "col-actions-stock text-right"
                 }
             ]
         };
@@ -238,7 +239,7 @@ export default {
             }
             this.$refs.stock.setValue(null);
         },
-        getID: function(id) {
+        onDelete: function(id) {
             this.toggleBusy();
             this.selectedID = id;
             this.$refs.modalConfirmDelete.show();
@@ -285,6 +286,11 @@ export default {
                 stocks.push(stockDeleted);
                 localStorage.setItem("stocksST", JSON.stringify(stocks));
             }
+            if (localStorage.getItem(symbol)) {
+                const stock = JSON.parse(localStorage.getItem(symbol));
+                stock.quantity = Number(stockItem.quantity);
+                localStorage.setItem(symbol, JSON.stringify(stock));
+            }
         },
         countDownChanged(dismissCountDown) {
             this.dismissCountDown = dismissCountDown;
@@ -315,13 +321,13 @@ export default {
 };
 </script>
 <style lang="scss">
-.col-actions {
+.col-actions-stock {
 	min-width: 110px;
 }
-.col-name {
+.col-name-stock {
 	min-width: 200px;
 }
-.col-quantity {
+.col-quantity-stock {
 	min-width: 120px;
 }
 </style>

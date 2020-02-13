@@ -131,15 +131,21 @@
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
-								<div class="text-light font-weight-bold" v-show="stock.detail.price">
-									{{ Number(stock.quantity * stock.detail.price).toFixed(2) }}
-								</div>
+								<div
+									class="text-light font-weight-bold"
+									v-show="stock.detail.price"
+								>{{ Number(stock.quantity * stock.detail.price).toFixed(2) }}</div>
 							</small>
 						</div>
 					</b-list-group-item>
 				</b-list-group>
 			</b-tab>
-			<b-tab title="Cryptos" title-link-class="text-light" title-item-class="outline-info" @click="getFoxBitCrypts">
+			<b-tab
+				title="Cryptos"
+				title-link-class="text-light"
+				title-item-class="outline-info"
+				@click="getFoxBitCrypts"
+			>
 				<b-list-group>
 					<b-list-group-item class="bg-dark">
 						<b-button size="sm" block variant="outline-info" @click="openOptionsPage">Go to options</b-button>
@@ -156,9 +162,9 @@
 									small
 									class="align-middle"
 									type="grow"
-									v-show="!crypto.last && !containsError"
+									v-show="!crypto.last && !containsErrorCrypto"
 								></b-spinner>
-								<div v-show="containsError" class="text-light">No internet&nbsp;</div>
+								<div v-show="containsErrorCrypto" class="text-light">No internet&nbsp;</div>
 								<div v-show="crypto.last">
 									<b-badge :variant="getBadgeColor(crypto)" pill>{{ crypto.lastVariation }}%</b-badge>&nbsp;
 									<strong class="text-light">{{ crypto.last }}</strong>
@@ -170,7 +176,12 @@
 						<div class="d-flex w-100 justify-content-between">
 							<p class="mb-1 text-muted">{{crypto.exchange}}</p>
 							<small class="text-muted font-italic">{{crypto.createdDate}}</small>
-							<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
+							<b-icon
+								class="font-weight-bold"
+								v-show="containsErrorCrypto"
+								icon="circle-slash"
+								variant="danger"
+							></b-icon>
 						</div>
 
 						<div class="d-flex w-100 justify-content-between text-light">
@@ -181,11 +192,11 @@
 									small
 									class="align-middle"
 									type="grow"
-									v-show="!crypto.high && !containsError"
+									v-show="!crypto.high && !containsErrorCrypto"
 								></b-spinner>
 								<b-icon
 									class="font-weight-bold"
-									v-show="containsError"
+									v-show="containsErrorCrypto"
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
@@ -198,11 +209,11 @@
 									small
 									class="align-middle"
 									type="grow"
-									v-show="!crypto.low && !containsError"
+									v-show="!crypto.low && !containsErrorCrypto"
 								></b-spinner>
 								<b-icon
 									class="font-weight-bold"
-									v-show="containsError"
+									v-show="containsErrorCrypto"
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
@@ -215,11 +226,11 @@
 									small
 									class="align-middle"
 									type="grow"
-									v-show="!crypto.vol && !containsError"
+									v-show="!crypto.vol && !containsErrorCrypto"
 								></b-spinner>
 								<b-icon
 									class="font-weight-bold"
-									v-show="containsError"
+									v-show="containsErrorCrypto"
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
@@ -232,17 +243,18 @@
 									small
 									class="align-middle"
 									type="grow"
-									v-show="!crypto.last && !containsError"
+									v-show="!crypto.last && !containsErrorCrypto"
 								></b-spinner>
 								<b-icon
 									class="font-weight-bold"
-									v-show="containsError"
+									v-show="containsErrorCrypto"
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
-								<div class="text-light font-weight-bold" v-show="crypto.last">
-									{{ Number((crypto.quantity || 0) * crypto.last).toFixed(2) }}
-								</div>
+								<div
+									class="text-light font-weight-bold"
+									v-show="crypto.last"
+								>{{ Number((crypto.quantity || 0) * crypto.last).toFixed(2) }}</div>
 							</small>
 						</div>
 					</b-list-group-item>
@@ -323,11 +335,6 @@ export default {
 		},
 		openOptionsPage() {
 			chrome.runtime.openOptionsPage();
-		},
-		getFoxBitCrypts() {
-			fetch("https://watcher.foxbit.com.br/api/Ticker")
-				.then(response => response.json())
-				.then(cryptos => (this.cryptos = cryptos));
 		}
 	},
 	async mounted() {
@@ -354,6 +361,32 @@ export default {
 					this.getStockDetail(symbol);
 				}
 			}
+
+			this.cryptos = JSON.parse(localStorage.getItem("cryptosST"));
+			fetch("https://watcher.foxbit.com.br/api/Ticker")
+				.then(response => response.json())
+				.then(cryptos => {
+					try {
+						for (const cryp of cryptos) {
+							const criptoFound = this.cryptos.find(
+								c =>
+									c.exchange === cryp.exchange &&
+									c.currency === cryp.currency
+							);
+							if (criptoFound) {
+								criptoFound.high = Number(cryp.high).toFixed(2);
+								criptoFound.low = Number(cryp.low).toFixed(2);
+								criptoFound.last = Number(cryp.last).toFixed(2);
+								criptoFound.vol = Number(cryp.vol).toFixed(2);
+								criptoFound.lastVariation = Number(cryp.lastVariation).toFixed(2);
+								criptoFound.createdDate = cryp.createdDate;
+							}
+						}
+					} catch (error) {
+						console.error(error);
+						this.containsErrorCrypto = true;
+					}
+				});
 
 			this.toggleBusy();
 		}
