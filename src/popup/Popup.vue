@@ -34,7 +34,7 @@
 								></b-spinner>
 								<div v-show="containsError" class="text-light">No internet&nbsp;</div>
 								<div v-show="stock.detail.price">
-									<b-badge :variant="getBadgeColor(stock.detail)" pill>{{ stock.detail.changePercent }}%</b-badge>&nbsp;
+									<b-badge :variant="getBadgeColor(stock.detail.changePercent)" pill>{{ stock.detail.changePercent }}%</b-badge>&nbsp;
 									<strong class="text-light">{{ stock.detail.price }}</strong>
 									<small class="text-muted">{{ stock.currency }}</small>
 								</div>
@@ -144,7 +144,6 @@
 				title="Cryptos"
 				title-link-class="text-light"
 				title-item-class="outline-info"
-				@click="getFoxBitCrypts"
 			>
 				<b-list-group>
 					<b-list-group-item class="bg-dark">
@@ -153,10 +152,10 @@
 					<b-list-group-item
 						class="flex-column align-items-start bg-dark text-light"
 						v-for="crypto in cryptos"
-						:key="crypto.currency"
+						:key="crypto.id+crypto.exchange"
 					>
 						<div class="d-flex w-100 justify-content-between">
-							<h6 class="mb-1 symbol text-info">{{crypto.currency}}</h6>
+							<h6 class="mb-1 symbol text-info">{{crypto.symbol}}</h6>
 							<label class="text-muted">
 								<b-spinner
 									small
@@ -166,7 +165,7 @@
 								></b-spinner>
 								<div v-show="containsErrorCrypto" class="text-light">No internet&nbsp;</div>
 								<div v-show="crypto.last">
-									<b-badge :variant="getBadgeColor(crypto)" pill>{{ crypto.lastVariation }}%</b-badge>&nbsp;
+									<b-badge :variant="getBadgeColor(crypto.lastVariation)" pill>{{ crypto.lastVariation }}%</b-badge>&nbsp;
 									<strong class="text-light">{{ crypto.last }}</strong>
 									<small class="text-muted">{{ crypto.currency }}</small>
 								</div>
@@ -277,20 +276,18 @@ export default {
 			selectedID: null,
 			fields: ["detail"],
 			localStorage,
-			containsError: false
+			containsError: false,
+			containsErrorCrypto: false
 		};
 	},
 	methods: {
 		toggleBusy() {
 			this.isBusy = !this.isBusy;
 		},
-		getBadgeColor(detail) {
-			if (detail.changePercent === "0.00") {
+		getBadgeColor(percent) {
+			if (percent === "0.00") {
 				return "primary";
-			} else if (
-				detail.changePercent &&
-				detail.changePercent.includes("-")
-			) {
+			} else if (percent && percent.includes("-")) {
 				return "danger";
 			} else {
 				return "success";
@@ -314,7 +311,7 @@ export default {
 					setTimeout(() => this.getStockDetail(symbol), 60000);
 				} else {
 					const stock = this.stocks.find(s => s.symbol === symbol);
-					stock.date = moment().format("HH:mm:ss");
+					stock.date = moment().format("YYYY-MM-DD HH:mm:ss");
 					stock.detail = {
 						open: Number(res[attrib]["02. open"]).toFixed(2),
 						high: Number(res[attrib]["03. high"]).toFixed(2),
@@ -371,15 +368,17 @@ export default {
 							const criptoFound = this.cryptos.find(
 								c =>
 									c.exchange === cryp.exchange &&
-									c.currency === cryp.currency
+									c.id === cryp.currency
 							);
 							if (criptoFound) {
 								criptoFound.high = Number(cryp.high).toFixed(2);
 								criptoFound.low = Number(cryp.low).toFixed(2);
 								criptoFound.last = Number(cryp.last).toFixed(2);
 								criptoFound.vol = Number(cryp.vol).toFixed(2);
-								criptoFound.lastVariation = Number(cryp.lastVariation).toFixed(2);
-								criptoFound.createdDate = cryp.createdDate;
+								criptoFound.lastVariation = Number(
+									cryp.lastVariation
+								).toFixed(2);
+								criptoFound.createdDate = moment(cryp.createdDate).format('YYYY-MM-DD HH:mm:ss');
 							}
 						}
 					} catch (error) {

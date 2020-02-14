@@ -44,6 +44,7 @@
 						:sort-by.sync="sortBy"
 						:sort-desc.sync="sortDesc"
 					>
+						<template slot="symbol" slot-scope="data">{{ data.item.symbol }}</template>
 						<template slot="exchange" slot-scope="data">{{ data.item.exchange }}</template>
 						<template slot="currency" slot-scope="data">{{ data.item.currency }}</template>
 						<template v-slot:cell(quantity)="data">
@@ -77,13 +78,17 @@ export default {
 	data() {
 		return {
 			selectedCrypto: null,
-			sortBy: "currency",
+			sortBy: "symbol",
 			sortDesc: false,
 			cryptos: [],
 			isBusy: false,
 			filter: null,
 			cryptoToDelete: null,
 			fields: [
+				{
+					key: "symbol",
+					sortable: true
+				},
 				{
 					key: "exchange",
 					sortable: true
@@ -98,66 +103,136 @@ export default {
 				},
 				{
 					key: "actions",
-                    label: "",
+					label: "",
 					tdClass: "text-right"
 				}
 			],
 			exchanges: [
 				{ value: null, text: "Please select an Exchange/Currency" },
 				{
-					value: { exchange: "Bitcambio", currency: "BRLXBTC" },
+					value: {
+						exchange: "Bitcambio",
+						id: "BRLXBTC",
+						currency: "BRL",
+						symbol: "BTC"
+					},
 					text: "Bitcambio - BRL/BTC"
 				},
 				{
-					value: { exchange: "BrasilBitcoin", currency: "BRLXBTC" },
+					value: {
+						exchange: "BrasilBitcoin",
+						id: "BRLXBTC",
+						currency: "BRL",
+						symbol: "BTC"
+					},
 					text: "BrasilBitcoin - BRL/BTC"
 				},
 				{
-					value: { exchange: "Braziliex", currency: "BRLXBTC" },
+					value: {
+						exchange: "Braziliex",
+						id: "BRLXBTC",
+						currency: "BRL",
+						symbol: "BTC"
+					},
 					text: "Braziliex - BRL/BTC"
 				},
 				{
-					value: { exchange: "CryptoMkt", currency: "BRLXBTC" },
+					value: {
+						exchange: "CryptoMkt",
+						id: "BRLXBTC",
+						currency: "BRL",
+						symbol: "BTC"
+					},
 					text: "CryptoMkt - BRL/BTC"
 				},
 				{
-					value: { exchange: "FlowBtc", currency: "BRLXBTC" },
+					value: {
+						exchange: "FlowBtc",
+						id: "BRLXBTC",
+						currency: "BRL",
+						symbol: "BTC"
+					},
 					text: "FlowBtc - BRL/BTC"
 				},
 				{
-					value: { exchange: "Foxbit", currency: "BRLXBTC" },
+					value: {
+						exchange: "Foxbit",
+						id: "BRLXBTC",
+						currency: "BRL",
+						symbol: "BTC"
+					},
 					text: "Foxbit - BRL/BTC"
 				},
 				{
-					value: { exchange: "Foxbit", currency: "BRLXETH" },
+					value: {
+						exchange: "Foxbit",
+						id: "BRLXETH",
+						currency: "BRL",
+						symbol: "ETH"
+					},
 					text: "Foxbit - BRL/ETH"
 				},
 				{
-					value: { exchange: "Foxbit", currency: "BRLXLTC" },
+					value: {
+						exchange: "Foxbit",
+						id: "BRLXLTC",
+						currency: "BRL",
+						symbol: "LTC"
+					},
 					text: "Foxbit - BRL/LTC"
 				},
 				{
-					value: { exchange: "Foxbit", currency: "BRLXXRP" },
+					value: {
+						exchange: "Foxbit",
+						id: "BRLXXRP",
+						currency: "BRL",
+						symbol: "XRP"
+					},
 					text: "Foxbit - BRL/XRP"
 				},
 				{
-					value: { exchange: "MercadoBitcoin", currency: "BRLXBTC" },
+					value: {
+						exchange: "MercadoBitcoin",
+						id: "BRLXBTC",
+						currency: "BRL",
+						symbol: "BTC"
+					},
 					text: "MercadoBitcoin - BRL/BTC"
 				},
 				{
-					value: { exchange: "OmniTradec", currency: "BRLXBTC" },
+					value: {
+						exchange: "OmniTradec",
+						id: "BRLXBTC",
+						currency: "BRL",
+						symbol: "BTC"
+					},
 					text: "OmniTradec - BRL/BTC"
 				},
 				{
-					value: { exchange: "PagCripto", currency: "BRLXBTC" },
+					value: {
+						exchange: "PagCripto",
+						id: "BRLXBTC",
+						currency: "BRL",
+						symbol: "BTC"
+					},
 					text: "PagCripto - BRL/BTC"
 				},
 				{
-					value: { exchange: "Profitfy", currency: "BRLXBTC" },
+					value: {
+						exchange: "Profitfy",
+						id: "BRLXBTC",
+						currency: "BRL",
+						symbol: "BTC"
+					},
 					text: "Profitfy - BRL/BTC"
 				},
 				{
-					value: { exchange: "Walltime", currency: "BRLXBTC" },
+					value: {
+						exchange: "Walltime",
+						id: "BRLXBTC",
+						currency: "BRL",
+						symbol: "BTC"
+					},
 					text: "Walltime - BRL/BTC"
 				}
 			]
@@ -177,7 +252,7 @@ export default {
 				const indexCrypto = arr.findIndex(
 					s =>
 						s.exchange === cryptoToDelete.exchange &&
-						s.currency === cryptoToDelete.currency
+						s.id === cryptoToDelete.id
 				);
 				if (indexCrypto > -1) {
 					arr.splice(indexCrypto, 1)[0];
@@ -199,7 +274,7 @@ export default {
 			const indexCrypto = cryptos.findIndex(
 				c =>
 					c.exchange === selectedCrypto.exchange &&
-					c.currency === selectedCrypto.currency
+					c.id === selectedCrypto.id
 			);
 			if (indexCrypto === -1) {
 				selectedCrypto.quantity = Number(0);
@@ -214,7 +289,7 @@ export default {
 			const indexCrypto = cryptos.findIndex(
 				c =>
 					c.exchange === selectedCrypto.exchange &&
-					c.currency === selectedCrypto.currency
+					c.id === selectedCrypto.id
 			);
 			if (indexCrypto > -1) {
 				const cryptoDeleted = cryptos.splice(indexCrypto, 1)[0];
@@ -241,6 +316,6 @@ export default {
 </script>
 <style lang="scss">
 .col-quantity-crypto {
-	width: 90px;
+	width: 140px;
 }
 </style>
