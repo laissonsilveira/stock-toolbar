@@ -21,7 +21,7 @@
 				</div>
 			</div>
 		</b-modal>
-		<b-tab title="Cryptos" active>
+		<b-tab title="Cryptos">
 			<b-container>
 				<b-row>
 					<b-form-select

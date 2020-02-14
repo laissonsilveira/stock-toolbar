@@ -21,7 +21,7 @@
 				</div>
 			</div>
 		</b-modal>
-        <b-tab title="Stocks">
+        <b-tab title="Stocks" active>
             <b-row>
                 <b-col>
                     <b-form v-on:submit.prevent="onSaveEmail">
