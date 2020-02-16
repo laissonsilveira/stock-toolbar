@@ -14,17 +14,20 @@
 						</div>
 					</b-list-group-item>
 					<b-list-group-item class="bg-dark" v-show="stocks.length > 0">
-						<b-button size="sm" block variant="outline-info" @click="openOptionsPage">Go to options</b-button>
+						<div class="d-flex w-100 justify-content-between">
+							<label class="font-weight-bold text-light">Total: {{ Number(getTotalStocks()).toFixed(2) }}</label>
+							<b-button size="sm" variant="outline-info" @click="openOptionsPage">Go to options</b-button>
+						</div>
 					</b-list-group-item>
 					<b-list-group-item
 						class="flex-column align-items-start bg-dark text-light"
 						v-for="stock in stocks"
 						:key="stock.symbol"
-						:href="localStorage.getItem('selectedEngine')+stock.symbol"
+						:href="localStorage.getItem('selectedEngine') + stock.symbol"
 						target="_blank"
 					>
 						<div class="d-flex w-100 justify-content-between">
-							<h6 class="mb-1 symbol text-info">{{stock.symbol}}</h6>
+							<h6 class="mb-1 symbol text-info">{{ stock.symbol }}</h6>
 							<label class="text-muted">
 								<b-spinner
 									small
@@ -34,7 +37,10 @@
 								></b-spinner>
 								<div v-show="containsError" class="text-light">No internet&nbsp;</div>
 								<div v-show="stock.detail.price">
-									<b-badge :variant="getBadgeColor(stock.detail.changePercent)" pill>{{ stock.detail.changePercent }}%</b-badge>&nbsp;
+									<b-badge
+										:variant="getBadgeColor(stock.detail.changePercent)"
+										pill
+									>{{ stock.detail.changePercent }}%</b-badge>&nbsp;
 									<strong class="text-light">{{ stock.detail.price }}</strong>
 									<small class="text-muted">{{ stock.currency }}</small>
 								</div>
@@ -42,8 +48,8 @@
 						</div>
 
 						<div class="d-flex w-100 justify-content-between">
-							<p class="mb-1 text-muted">{{stock.name}}</p>
-							<small class="text-muted font-italic">{{stock.date}}</small>
+							<p class="mb-1 text-muted">{{ stock.name }}</p>
+							<small class="text-muted font-italic">{{ stock.date }}</small>
 							<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
 						</div>
 
@@ -140,22 +146,23 @@
 					</b-list-group-item>
 				</b-list-group>
 			</b-tab>
-			<b-tab
-				title="Cryptos"
-				title-link-class="text-light"
-				title-item-class="outline-info"
-			>
+			<b-tab title="Cryptos" title-link-class="text-light" title-item-class="outline-info">
 				<b-list-group>
 					<b-list-group-item class="bg-dark">
-						<b-button size="sm" block variant="outline-info" @click="openOptionsPage">Go to options</b-button>
+						<div class="d-flex w-100 justify-content-between">
+							<label class="font-weight-bold text-light">Total: {{ Number(totalCryptos).toFixed(2) }}</label>
+							<b-button size="sm" variant="outline-info" @click="openOptionsPage">Go to options</b-button>
+						</div>
 					</b-list-group-item>
 					<b-list-group-item
 						class="flex-column align-items-start bg-dark text-light"
 						v-for="crypto in cryptos"
-						:key="crypto.id+crypto.exchange"
+						:key="crypto.id + crypto.exchange"
+						:href="crypto.url"
+						target="_blank"
 					>
 						<div class="d-flex w-100 justify-content-between">
-							<h6 class="mb-1 symbol text-info">{{crypto.symbol}}</h6>
+							<h6 class="mb-1 symbol text-info">{{ crypto.symbol }}</h6>
 							<label class="text-muted">
 								<b-spinner
 									small
@@ -173,8 +180,12 @@
 						</div>
 
 						<div class="d-flex w-100 justify-content-between">
-							<p class="mb-1 text-muted">{{crypto.exchange}}</p>
-							<small class="text-muted font-italic">{{crypto.createdDate}}</small>
+							<p class="mb-1 text-muted">{{ crypto.exchange }}</p>
+							<small class="text-muted font-italic">
+								{{
+								crypto.createdDate
+								}}
+							</small>
 							<b-icon
 								class="font-weight-bold"
 								v-show="containsErrorCrypto"
@@ -266,6 +277,7 @@
 <script>
 import StocksAPI from "../js/api-st";
 import moment from "moment";
+import StorageST from "../js/storage-st";
 export default {
 	data() {
 		return {
@@ -277,7 +289,9 @@ export default {
 			fields: ["detail"],
 			localStorage,
 			containsError: false,
-			containsErrorCrypto: false
+			containsErrorCrypto: false,
+			totalStocks: 0,
+			totalCryptos: 0
 		};
 	},
 	methods: {
@@ -293,11 +307,23 @@ export default {
 				return "success";
 			}
 		},
-		async getStockDetail(symbol) {
+		_setTotalStocks(stock) {
+			if (stock.isEnabled && stock.detail && stock.detail.price)
+				this.totalStocks += stock.quantity * stock.detail.price;
+		},
+		getTotalStocks() {
+			let total = 0;
+			this.stocks.forEach(stock => {
+				if (stock.isEnabled && stock.detail && stock.detail.price)
+					total += stock.quantity * stock.detail.price;
+			});
+			return total;
+		},
+		async getStockDetail(symbol, key) {
 			try {
 				const attrib = "Global Quote";
 
-				const res = await StocksAPI.GLOBAL_QUOTE(symbol);
+				const res = await StocksAPI.GLOBAL_QUOTE(symbol, key || null);
 				if (res.Note) {
 					let stock = JSON.parse(localStorage.getItem(symbol));
 					if (stock && stock.detail && stock.detail.open) {
@@ -307,8 +333,9 @@ export default {
 						stockOld.date = stock.date;
 						stockOld.quantity = stock.quantity;
 						stockOld.detail = stock.detail;
+						// this._setTotalStocks(stockOld);
 					}
-					setTimeout(() => this.getStockDetail(symbol), 60000);
+					setTimeout(() => this.getStockDetail(symbol, key), 60000);
 				} else {
 					const stock = this.stocks.find(s => s.symbol === symbol);
 					stock.date = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -323,6 +350,7 @@ export default {
 							res[attrib]["10. change percent"].replace("%", "")
 						).toFixed(2)
 					};
+					// this._setTotalStocks(stock);
 					localStorage.setItem(stock.symbol, JSON.stringify(stock));
 				}
 			} catch (error) {
@@ -335,58 +363,87 @@ export default {
 		}
 	},
 	async mounted() {
-		if (localStorage.stocksST) {
-			this.toggleBusy();
+		if (await StorageST.has(StorageST.STOCKS_ST)) {
+			const __mountCryptoList = async () => {
+				this.cryptos = JSON.parse(
+					await StorageST.getValue(StorageST.CRYPTOS_ST)
+				);
+				fetch("https://watcher.foxbit.com.br/api/Ticker")
+					.then(response => response.json())
+					.then(cryptos => {
+						try {
+							for (const cryp of cryptos) {
+								const criptoFound = this.cryptos.find(
+									c =>
+										c.exchange === cryp.exchange &&
+										c.id === cryp.currency
+								);
+								if (criptoFound) {
+									criptoFound.high = Number(
+										cryp.high
+									).toFixed(2);
+									criptoFound.low = Number(cryp.low).toFixed(
+										2
+									);
+									criptoFound.last = Number(
+										cryp.last
+									).toFixed(2);
+									criptoFound.vol = Number(cryp.vol).toFixed(
+										2
+									);
+									criptoFound.lastVariation = Number(
+										cryp.lastVariation
+									).toFixed(2);
+									criptoFound.createdDate = moment(
+										cryp.createdDate
+									).format("YYYY-MM-DD HH:mm:ss");
 
-			const stocks = JSON.parse(localStorage.getItem("stocksST"));
-			for (const s of stocks) {
-				if (s.isEnabled) {
-					const {
-						"1. symbol": symbol,
-						"2. name": name,
-						"8. currency": currency,
-						quantity
-					} = s;
-					const stock = {};
-					stock.symbol = symbol;
-					stock.name = name;
-					stock.currency = currency;
-					stock.quantity = quantity;
-					stock.detail = {};
-
-					this.stocks.push(stock);
-					this.getStockDetail(symbol);
-				}
-			}
-
-			this.cryptos = JSON.parse(localStorage.getItem("cryptosST"));
-			fetch("https://watcher.foxbit.com.br/api/Ticker")
-				.then(response => response.json())
-				.then(cryptos => {
-					try {
-						for (const cryp of cryptos) {
-							const criptoFound = this.cryptos.find(
-								c =>
-									c.exchange === cryp.exchange &&
-									c.id === cryp.currency
-							);
-							if (criptoFound) {
-								criptoFound.high = Number(cryp.high).toFixed(2);
-								criptoFound.low = Number(cryp.low).toFixed(2);
-								criptoFound.last = Number(cryp.last).toFixed(2);
-								criptoFound.vol = Number(cryp.vol).toFixed(2);
-								criptoFound.lastVariation = Number(
-									cryp.lastVariation
-								).toFixed(2);
-								criptoFound.createdDate = moment(cryp.createdDate).format('YYYY-MM-DD HH:mm:ss');
+									this.totalCryptos +=
+										criptoFound.quantity * criptoFound.last;
+								}
 							}
+						} catch (error) {
+							console.error(error);
+							this.containsErrorCrypto = true;
 						}
-					} catch (error) {
-						console.error(error);
-						this.containsErrorCrypto = true;
-					}
-				});
+					});
+			};
+			const __mountStockList = async () => {
+				const stocks = JSON.parse(
+					await StorageST.getValue(StorageST.STOCKS_ST)
+				);
+				let index = 0;
+				for (const s of stocks) {
+					if (s.isEnabled) {
+						const {
+							"1. symbol": symbol,
+							"2. name": name,
+							"8. currency": currency,
+							quantity,
+							isEnabled
+						} = s;
+						const stock = {};
+						stock.symbol = symbol;
+						stock.name = name;
+						stock.currency = currency;
+						stock.quantity = quantity;
+						stock.isEnabled = isEnabled;
+						stock.detail = {};
 
+						this.stocks.push(stock);
+						setTimeout(() => {
+							this.getStockDetail(
+								symbol,
+								index < 5 && localStorage.getItem("keyST")
+							);
+							index++;
+						}, 100 * index);
+					}
+				}
+			};
+			this.toggleBusy();
+			__mountStockList();
+			__mountCryptoList();
 			this.toggleBusy();
 		}
 	}

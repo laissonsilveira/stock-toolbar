@@ -29,6 +29,8 @@
 		"notifications",
 		"contextMenus",
 		"webRequest",
+		"storage",
+		"unlimitedStorage",
 		"https://www.alphavantage.co/",
 		"webRequestBlocking",
 		"identity",

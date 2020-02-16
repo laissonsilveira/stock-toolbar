@@ -1,7 +1,16 @@
-global.browser = require('webextension-polyfill');
-import StocksAPI from './js/api-st';
+global.browser = require("webextension-polyfill");
+import StocksAPI from "./js/api-st";
+import StorageST from "./js/storage-st";
 StocksAPI.addHandlers();
 StocksAPI.init();
-!localStorage.stocksST && localStorage.setItem('stocksST', '[]');
-!localStorage.cryptosST && localStorage.setItem('cryptosST', '[]');
-!localStorage.selectedEngine && localStorage.setItem('selectedEngine', 'https://www.google.com/search?site=finance&tbm=fin&q=');
+!localStorage.selectedEngine &&
+  localStorage.setItem(
+    "selectedEngine",
+    "https://www.google.com/search?site=finance&tbm=fin&q="
+  );
+(async () => {
+  if (!await StorageST.has(StorageST.STOCKS_ST))
+    StorageST.addValue(StorageST.STOCKS_ST, '[]');
+  if (!await StorageST.has(StorageST.CRYPTOS_ST))
+    StorageST.addValue(StorageST.CRYPTOS_ST, '[]');
+})();

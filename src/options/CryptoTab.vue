@@ -23,7 +23,7 @@
 		</b-modal>
 		<b-tab title="Cryptos">
 			<b-container>
-				<b-row>
+				<b-row class="mb-2">
 					<b-form-select
 						v-model="selectedCrypto"
 						:options="exchanges"
@@ -31,58 +31,85 @@
 					></b-form-select>
 				</b-row>
 				<b-row>
-					<b-table
-						:busy="isBusy"
-						ref="table"
-						show-empty
-						striped
-						hover
-						responsive
-						:items="cryptos"
-						:fields="fields"
-						:filter="filter"
-						:sort-by.sync="sortBy"
-						:sort-desc.sync="sortDesc"
-					>
-						<template slot="symbol" slot-scope="data">{{ data.item.symbol }}</template>
-						<template slot="exchange" slot-scope="data">{{ data.item.exchange }}</template>
-						<template slot="currency" slot-scope="data">{{ data.item.currency }}</template>
-						<template v-slot:cell(quantity)="data">
-							<b-form-input
-								v-model="data.item.quantity"
-								@change="onChangeQuantityCrypto(data.item)"
-								type="number"
-								size="sm"
-							/>
-						</template>
-						<template v-slot:cell(actions)="data">
-							<a href="#" v-on:click="onDelete(data.item)" class="h4">
-								<b-icon icon="trash" variant="danger"></b-icon>
-							</a>
-						</template>
-						<template v-slot:table-busy>
-							<div class="text-center text-dark my-2">
-								<b-spinner class="align-middle"></b-spinner>
-								<strong>Loading...</strong>
-							</div>
-						</template>
-					</b-table>
+					<b-col>
+						<b-table
+							:busy="isBusy"
+							ref="table"
+							show-empty
+							striped
+							hover
+							responsive
+							:items="cryptos"
+							:fields="fields"
+							:current-page="currentPage"
+							:per-page="perPage"
+							:sort-by.sync="sortBy"
+							:sort-desc.sync="sortDesc"
+						>
+							<template slot="symbol" slot-scope="data">
+								{{
+								data.item.symbol
+								}}
+							</template>
+							<template slot="exchange" slot-scope="data">
+								{{
+								data.item.exchange
+								}}
+							</template>
+							<template slot="currency" slot-scope="data">
+								{{
+								data.item.currency
+								}}
+							</template>
+							<template v-slot:cell(quantity)="data">
+								<b-form-input
+									v-model="data.item.quantity"
+									@change="onChangeQuantityCrypto(data.item)"
+									type="number"
+									size="sm"
+								/>
+							</template>
+							<template v-slot:cell(actions)="data">
+								<a href="#" v-on:click="onDelete(data.item)" class="h4">
+									<b-icon icon="trash" variant="danger"></b-icon>
+								</a>
+							</template>
+							<template v-slot:table-busy>
+								<div class="text-center text-dark my-2">
+									<b-spinner class="align-middle"></b-spinner>
+									<strong>Loading...</strong>
+								</div>
+							</template>
+						</b-table>
+						<b-pagination
+							align="center"
+							size="sm"
+							pills
+							:total-rows="totalRows"
+							:per-page="perPage"
+							v-model="currentPage"
+						/>
+					</b-col>
 				</b-row>
 			</b-container>
 		</b-tab>
 	</div>
 </template>
 <script>
+import StorageST from "../js/storage-st";
+import { EventBus } from "./event-bus.js";
 export default {
 	name: "CryptoTab",
 	data() {
 		return {
+			currentPage: 1,
+			perPage: 5,
+			totalRows: null,
 			selectedCrypto: null,
 			sortBy: "symbol",
 			sortDesc: false,
 			cryptos: [],
 			isBusy: false,
-			filter: null,
 			cryptoToDelete: null,
 			fields: [
 				{
@@ -114,7 +141,8 @@ export default {
 						exchange: "Bitcambio",
 						id: "BRLXBTC",
 						currency: "BRL",
-						symbol: "BTC"
+						symbol: "BTC",
+						url: "bitcambio.com.br"
 					},
 					text: "Bitcambio - BRL/BTC"
 				},
@@ -123,16 +151,18 @@ export default {
 						exchange: "BrasilBitcoin",
 						id: "BRLXBTC",
 						currency: "BRL",
-						symbol: "BTC"
+						symbol: "BTC",
+						url: "https://brasilbitcoin.com.br/"
 					},
-					text: "BrasilBitcoin - BRL/BTC"
+					text: "Brasil Bitcoin - BRL/BTC"
 				},
 				{
 					value: {
 						exchange: "Braziliex",
 						id: "BRLXBTC",
 						currency: "BRL",
-						symbol: "BTC"
+						symbol: "BTC",
+						url: "https://braziliex.com/"
 					},
 					text: "Braziliex - BRL/BTC"
 				},
@@ -141,16 +171,18 @@ export default {
 						exchange: "CryptoMkt",
 						id: "BRLXBTC",
 						currency: "BRL",
-						symbol: "BTC"
+						symbol: "BTC",
+						url: "https://www.cryptomkt.com/"
 					},
-					text: "CryptoMkt - BRL/BTC"
+					text: "CryptoMKT - BRL/BTC"
 				},
 				{
 					value: {
 						exchange: "FlowBtc",
 						id: "BRLXBTC",
 						currency: "BRL",
-						symbol: "BTC"
+						symbol: "BTC",
+						url: "https://www.flowbtc.com.br/"
 					},
 					text: "FlowBtc - BRL/BTC"
 				},
@@ -159,7 +191,8 @@ export default {
 						exchange: "Foxbit",
 						id: "BRLXBTC",
 						currency: "BRL",
-						symbol: "BTC"
+						symbol: "BTC",
+						url: "https://foxbit.com.br/"
 					},
 					text: "Foxbit - BRL/BTC"
 				},
@@ -168,7 +201,8 @@ export default {
 						exchange: "Foxbit",
 						id: "BRLXETH",
 						currency: "BRL",
-						symbol: "ETH"
+						symbol: "ETH",
+						url: "https://foxbit.com.br/"
 					},
 					text: "Foxbit - BRL/ETH"
 				},
@@ -177,7 +211,8 @@ export default {
 						exchange: "Foxbit",
 						id: "BRLXLTC",
 						currency: "BRL",
-						symbol: "LTC"
+						symbol: "LTC",
+						url: "https://foxbit.com.br/"
 					},
 					text: "Foxbit - BRL/LTC"
 				},
@@ -186,7 +221,8 @@ export default {
 						exchange: "Foxbit",
 						id: "BRLXXRP",
 						currency: "BRL",
-						symbol: "XRP"
+						symbol: "XRP",
+						url: "https://foxbit.com.br/"
 					},
 					text: "Foxbit - BRL/XRP"
 				},
@@ -195,7 +231,8 @@ export default {
 						exchange: "MercadoBitcoin",
 						id: "BRLXBTC",
 						currency: "BRL",
-						symbol: "BTC"
+						symbol: "BTC",
+						url: "https://www.mercadobitcoin.com.br/"
 					},
 					text: "MercadoBitcoin - BRL/BTC"
 				},
@@ -204,7 +241,8 @@ export default {
 						exchange: "OmniTradec",
 						id: "BRLXBTC",
 						currency: "BRL",
-						symbol: "BTC"
+						symbol: "BTC",
+						url: "https://omnitrade.io/"
 					},
 					text: "OmniTradec - BRL/BTC"
 				},
@@ -213,7 +251,8 @@ export default {
 						exchange: "PagCripto",
 						id: "BRLXBTC",
 						currency: "BRL",
-						symbol: "BTC"
+						symbol: "BTC",
+						url: "https://www.pagcripto.com.br/"
 					},
 					text: "PagCripto - BRL/BTC"
 				},
@@ -222,7 +261,8 @@ export default {
 						exchange: "Profitfy",
 						id: "BRLXBTC",
 						currency: "BRL",
-						symbol: "BTC"
+						symbol: "BTC",
+						url: "https://profitfy.trade/"
 					},
 					text: "Profitfy - BRL/BTC"
 				},
@@ -231,7 +271,8 @@ export default {
 						exchange: "Walltime",
 						id: "BRLXBTC",
 						currency: "BRL",
-						symbol: "BTC"
+						symbol: "BTC",
+						url: "https://walltime.info/"
 					},
 					text: "Walltime - BRL/BTC"
 				}
@@ -242,13 +283,13 @@ export default {
 		toggleBusy() {
 			this.isBusy = !this.isBusy;
 		},
-		onDelete: function(cryptoToDelete) {
+		onDelete(cryptoToDelete) {
 			this.toggleBusy();
 			this.cryptoToDelete = cryptoToDelete;
 			this.$refs.modalConfirmDelete.show();
 		},
-		deleteItem: function(cryptoToDelete) {
-			const doDelete = arr => {
+		async deleteItem(cryptoToDelete) {
+			const doDelete = async arr => {
 				const indexCrypto = arr.findIndex(
 					s =>
 						s.exchange === cryptoToDelete.exchange &&
@@ -256,12 +297,18 @@ export default {
 				);
 				if (indexCrypto > -1) {
 					arr.splice(indexCrypto, 1)[0];
-					localStorage.setItem("cryptosST", JSON.stringify(arr));
+					await StorageST.addValue(
+						StorageST.CRYPTOS_ST,
+						JSON.stringify(arr)
+					);
 				}
 			};
-			const cryptos = JSON.parse(localStorage.getItem("cryptosST"));
+			const cryptos = JSON.parse(
+				await StorageST.getValue(StorageST.CRYPTOS_ST)
+			);
 			doDelete(cryptos);
 			doDelete(this.cryptos);
+			this.totalRows = this.cryptos.length;
 			this.onCloseModalDelete();
 		},
 		onCloseModalDelete: function() {
@@ -269,8 +316,10 @@ export default {
 			this.toggleBusy();
 			this.$refs.table.refresh();
 		},
-		onSelectCrypto: function(selectedCrypto) {
-			const cryptos = JSON.parse(localStorage.getItem("cryptosST"));
+		async onSelectCrypto(selectedCrypto) {
+			const cryptos = JSON.parse(
+				await StorageST.getValue(StorageST.CRYPTOS_ST)
+			);
 			const indexCrypto = cryptos.findIndex(
 				c =>
 					c.exchange === selectedCrypto.exchange &&
@@ -279,13 +328,19 @@ export default {
 			if (indexCrypto === -1) {
 				selectedCrypto.quantity = Number(0);
 				cryptos.push(selectedCrypto);
-				localStorage.setItem("cryptosST", JSON.stringify(cryptos));
+				await StorageST.addValue(
+					StorageST.CRYPTOS_ST,
+					JSON.stringify(cryptos)
+				);
 				this.cryptos = cryptos;
+				this.totalRows = this.cryptos.length;
 				this.selectedCrypto = null;
 			}
 		},
-		onChangeQuantityCrypto: function(selectedCrypto) {
-			const cryptos = JSON.parse(localStorage.getItem("cryptosST"));
+		async onChangeQuantityCrypto(selectedCrypto) {
+			const cryptos = JSON.parse(
+				await StorageST.getValue(StorageST.CRYPTOS_ST)
+			);
 			const indexCrypto = cryptos.findIndex(
 				c =>
 					c.exchange === selectedCrypto.exchange &&
@@ -295,7 +350,10 @@ export default {
 				const cryptoDeleted = cryptos.splice(indexCrypto, 1)[0];
 				cryptoDeleted.quantity = Number(selectedCrypto.quantity);
 				cryptos.push(cryptoDeleted);
-				localStorage.setItem("cryptosST", JSON.stringify(cryptos));
+				await StorageST.addValue(
+					StorageST.CRYPTOS_ST,
+					JSON.stringify(cryptos)
+				);
 			}
 		},
 		showAlert(msg, variant = "danger") {
@@ -307,10 +365,20 @@ export default {
 			});
 		}
 	},
-	mounted() {
-		if (localStorage.cryptosST) {
-			this.cryptos = JSON.parse(localStorage.getItem("cryptosST"));
+	async mounted() {
+		if (await StorageST.has(StorageST.CRYPTOS_ST)) {
+			this.cryptos = JSON.parse(
+				await StorageST.getValue(StorageST.CRYPTOS_ST)
+			);
+			this.totalRows = this.cryptos.length;
 		}
+	},
+	created() {
+		EventBus.$on("update-cryptos-table", data => {
+			this.cryptos = data;
+			this.$refs.table.refresh();
+			this.$refs.table.$forceUpdate();
+		});
 	}
 };
 </script>
