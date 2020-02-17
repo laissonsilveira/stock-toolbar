@@ -162,7 +162,10 @@
 						target="_blank"
 					>
 						<div class="d-flex w-100 justify-content-between">
-							<h6 class="mb-1 symbol text-info">{{ crypto.symbol }}</h6>
+							<h6 class="mb-1 symbol text-info">
+								<b-img left :src="getSrcImage(crypto.symbol)" width="20" height="20"></b-img>&nbsp;
+								{{ crypto.symbol }}
+							</h6>
 							<label class="text-muted">
 								<b-spinner
 									small
@@ -360,6 +363,9 @@ export default {
 		},
 		openOptionsPage() {
 			chrome.runtime.openOptionsPage();
+		},
+		getSrcImage(symbol) {
+			return `/icons/${symbol}.png`;
 		}
 	},
 	async mounted() {
