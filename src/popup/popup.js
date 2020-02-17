@@ -11,7 +11,7 @@ Vue.prototype.$browser = global.browser;
 
 Vue.filter('toCurrency', function (
 	value,
-	currency = localStorage.getItem("currencyLocal"),
+	currency = localStorage.getItem("currencyStock"),
 	locale = navigator.language
 ) {
 	try {

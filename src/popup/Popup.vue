@@ -72,9 +72,9 @@
 									variant="danger"
 								></b-icon>
 								<div
-									class="text-light"
+									class="text-light price-detail"
 									v-show="stock.detail.open"
-								>{{ stock.detail.open | toCurrency(stock.currency) }}</div>
+								>{{ stock.detail.open | toCurrency }}</div>
 							</small>
 							<small class="text-muted">
 								<strong>High</strong>
@@ -92,9 +92,9 @@
 									variant="danger"
 								></b-icon>
 								<div
-									class="text-light"
+									class="text-light price-detail"
 									v-show="stock.detail.high"
-								>{{ stock.detail.high | toCurrency(stock.currency) }}</div>
+								>{{ stock.detail.high | toCurrency }}</div>
 							</small>
 							<small class="text-muted">
 								<strong>Low</strong>
@@ -112,9 +112,9 @@
 									variant="danger"
 								></b-icon>
 								<div
-									class="text-light"
+									class="text-light price-detail"
 									v-show="stock.detail.low"
-								>{{ stock.detail.low | toCurrency(stock.currency) }}</div>
+								>{{ stock.detail.low | toCurrency }}</div>
 							</small>
 							<small class="text-muted">
 								<strong>Vol</strong>
@@ -131,7 +131,7 @@
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
-								<div class="text-light" v-show="stock.detail.volume">{{ stock.detail.volume }}</div>
+								<div class="text-light price-detail" v-show="stock.detail.volume">{{ stock.detail.volume }}</div>
 							</small>
 							<small class="text-muted">
 								<strong>Own</strong>
@@ -148,10 +148,10 @@
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
-								<div
-									class="text-light font-weight-bold"
-									v-show="stock.detail.price"
-								>{{ Number(stock.quantity * stock.detail.price).toFixed(2) | toCurrency(stock.currency) }}</div>
+								<div class="text-light font-weight-bold price-detail" v-show="stock.detail.price">
+									{{ getOwn(stock.quantity, stock.detail.price, stock.currency) | toCurrency }}
+									&nbsp;({{Number(stock.quantity).toFixed(2)}}un)
+								</div>
 							</small>
 						</div>
 					</b-list-group-item>
@@ -227,7 +227,7 @@
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
-								<div class="text-light" v-show="crypto.high">{{ crypto.high | toCurrency(crypto.currency) }}</div>
+								<div class="text-light price-detail" v-show="crypto.high">{{ crypto.high | toCurrency }}</div>
 							</small>
 							<small class="text-muted">
 								<strong>Low</strong>
@@ -244,7 +244,7 @@
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
-								<div class="text-light" v-show="crypto.low">{{ crypto.low | toCurrency(crypto.currency) }}</div>
+								<div class="text-light price-detail" v-show="crypto.low">{{ crypto.low | toCurrency }}</div>
 							</small>
 							<small class="text-muted">
 								<strong>Vol</strong>
@@ -261,7 +261,7 @@
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
-								<div class="text-light" v-show="crypto.vol">{{ crypto.vol }}</div>
+								<div class="text-light price-detail" v-show="crypto.vol">{{ crypto.vol }}</div>
 							</small>
 							<small class="text-muted">
 								<strong>Own</strong>
@@ -278,10 +278,9 @@
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
-								<div
-									class="text-light font-weight-bold"
-									v-show="crypto.last"
-								>{{ Number((crypto.quantity || 0) * crypto.last).toFixed(2) | toCurrency(crypto.currency) }}</div>
+								<div class="text-light font-weight-bold price-detail" v-show="crypto.last">
+									{{ getOwn(crypto.quantity || 0, crypto.last, crypto.currency) | toCurrency }}
+									&nbsp;({{Number(crypto.quantity).toFixed(2)}}un)</div>
 							</small>
 						</div>
 					</b-list-group-item>
@@ -324,10 +323,6 @@ export default {
 				return "success";
 			}
 		},
-		_setTotalStocks(stock) {
-			if (stock.isEnabled && stock.detail && stock.detail.price)
-				this.totalStocks += stock.quantity * stock.detail.price;
-		},
 		getTotalStocks() {
 			let total = 0;
 			this.stocks.forEach(stock => {
@@ -350,7 +345,6 @@ export default {
 						stockOld.date = stock.date;
 						stockOld.quantity = stock.quantity;
 						stockOld.detail = stock.detail;
-						// this._setTotalStocks(stockOld);
 					}
 					setTimeout(() => this.getStockDetail(symbol, key), 60000);
 				} else {
@@ -367,7 +361,6 @@ export default {
 							res[attrib]["10. change percent"].replace("%", "")
 						).toFixed(2)
 					};
-					// this._setTotalStocks(stock);
 					localStorage.setItem(stock.symbol, JSON.stringify(stock));
 				}
 			} catch (error) {
@@ -381,8 +374,13 @@ export default {
 		getSrcImage(symbol) {
 			return `/icons/${symbol}.png`;
 		},
-		exchangeCurrency() {
-			
+		exchangeCurrency(value, currency) {
+			return value * this.exchanges.rates[currency];
+		},
+		getOwn(quantity, price, currency) {
+			return Number(
+				quantity * this.exchangeCurrency(price, currency)
+			).toFixed(2);
 		}
 	},
 	async mounted() {
@@ -468,7 +466,7 @@ export default {
 
 			this.exchanges = await fetch(
 				`https://api.exchangerate-api.com/v4/latest/${localStorage.getItem(
-					"currencyLocal"
+					"currencyStock"
 				)}`
 			).then(res => res.json());
 
@@ -502,5 +500,8 @@ body {
 }
 .hidden_header {
 	display: none;
+}
+.price-detail {
+	font-size: 11.5px;
 }
 </style>

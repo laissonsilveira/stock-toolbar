@@ -55,8 +55,8 @@
 							</b-form-group>
 						</b-col>
 						<b-col>
-							<b-form-group label="Currency to total:">
-								<b-form-select v-model="currencyLocal" :options="currencies" @change="saveCurrencyTotal"></b-form-select>
+							<b-form-group label="Currency:">
+								<b-form-select v-model="currencyStock" :options="currencies" @change="saveCurrencyStock"></b-form-select>
 							</b-form-group>
 						</b-col>
 					</b-row>
@@ -188,7 +188,7 @@ export default {
 			selectedID: null,
 			selectedEngine: localStorage.getItem("selectedEngine"),
 			currencies: ["USD", "BRL"],
-			currencyLocal: localStorage.getItem("currencyLocal"),
+			currencyStock: localStorage.getItem("currencyStock"),
 			engines: [
 				{
 					text: "Google",
@@ -229,8 +229,8 @@ export default {
 		};
 	},
 	methods: {
-		saveCurrencyTotal() {
-			localStorage.setItem("currencyLocal", this.currencyLocal);
+		saveCurrencyStock() {
+			localStorage.setItem("currencyStock", this.currencyStock);
 		},
 		async search(input) {
 			if (input.length < 3) {

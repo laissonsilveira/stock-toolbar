@@ -10,7 +10,7 @@ StocksAPI.init();
 		"https://www.google.com/search?site=finance&tbm=fin&q="
 	);
 
-!localStorage.currencyLocal && localStorage.setItem("currencyLocal", 'USD');
+!localStorage.currencyStock && localStorage.setItem("currencyStock", 'USD');
 
 (async () => {
 	if (!await StorageST.has(StorageST.STOCKS_ST))
