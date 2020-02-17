@@ -15,7 +15,9 @@
 					</b-list-group-item>
 					<b-list-group-item class="bg-dark" v-show="stocks.length > 0">
 						<div class="d-flex w-100 justify-content-between">
-							<label class="font-weight-bold text-light">Total: {{ Number(getTotalStocks()).toFixed(2) }}</label>
+							<label
+								class="font-weight-bold text-light"
+							>Total: {{ Number(getTotalStocks()).toFixed(2) | toCurrency }}</label>
 							<b-button size="sm" variant="outline-info" @click="openOptionsPage">Go to options</b-button>
 						</div>
 					</b-list-group-item>
@@ -41,7 +43,7 @@
 										:variant="getBadgeColor(stock.detail.changePercent)"
 										pill
 									>{{ stock.detail.changePercent }}%</b-badge>&nbsp;
-									<strong class="text-light">{{ stock.detail.price }}</strong>
+									<strong class="text-light">{{ stock.detail.price | toCurrency(stock.currency) }}</strong>
 									<small class="text-muted">{{ stock.currency }}</small>
 								</div>
 							</label>
@@ -69,7 +71,10 @@
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
-								<div class="text-light" v-show="stock.detail.open">{{ stock.detail.open }}</div>
+								<div
+									class="text-light"
+									v-show="stock.detail.open"
+								>{{ stock.detail.open | toCurrency(stock.currency) }}</div>
 							</small>
 							<small class="text-muted">
 								<strong>High</strong>
@@ -86,7 +91,10 @@
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
-								<div class="text-light" v-show="stock.detail.high">{{ stock.detail.high }}</div>
+								<div
+									class="text-light"
+									v-show="stock.detail.high"
+								>{{ stock.detail.high | toCurrency(stock.currency) }}</div>
 							</small>
 							<small class="text-muted">
 								<strong>Low</strong>
@@ -103,7 +111,10 @@
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
-								<div class="text-light" v-show="stock.detail.low">{{ stock.detail.low }}</div>
+								<div
+									class="text-light"
+									v-show="stock.detail.low"
+								>{{ stock.detail.low | toCurrency(stock.currency) }}</div>
 							</small>
 							<small class="text-muted">
 								<strong>Vol</strong>
@@ -140,7 +151,7 @@
 								<div
 									class="text-light font-weight-bold"
 									v-show="stock.detail.price"
-								>{{ Number(stock.quantity * stock.detail.price).toFixed(2) }}</div>
+								>{{ Number(stock.quantity * stock.detail.price).toFixed(2) | toCurrency(stock.currency) }}</div>
 							</small>
 						</div>
 					</b-list-group-item>
@@ -150,7 +161,9 @@
 				<b-list-group>
 					<b-list-group-item class="bg-dark">
 						<div class="d-flex w-100 justify-content-between">
-							<label class="font-weight-bold text-light">Total: {{ Number(totalCryptos).toFixed(2) }}</label>
+							<label
+								class="font-weight-bold text-light"
+							>Total: {{ Number(totalCryptos).toFixed(2) | toCurrency }}</label>
 							<b-button size="sm" variant="outline-info" @click="openOptionsPage">Go to options</b-button>
 						</div>
 					</b-list-group-item>
@@ -163,7 +176,8 @@
 					>
 						<div class="d-flex w-100 justify-content-between">
 							<h6 class="mb-1 symbol text-info">
-								<b-img left :src="getSrcImage(crypto.symbol)" width="20" height="20"></b-img>&nbsp;
+								<b-img left :src="getSrcImage(crypto.symbol)" width="20" height="20"></b-img>
+								&nbsp;
 								{{ crypto.symbol }}
 							</h6>
 							<label class="text-muted">
@@ -176,7 +190,7 @@
 								<div v-show="containsErrorCrypto" class="text-light">No internet&nbsp;</div>
 								<div v-show="crypto.last">
 									<b-badge :variant="getBadgeColor(crypto.lastVariation)" pill>{{ crypto.lastVariation }}%</b-badge>&nbsp;
-									<strong class="text-light">{{ crypto.last }}</strong>
+									<strong class="text-light">{{ crypto.last | toCurrency(crypto.currency) }}</strong>
 									<small class="text-muted">{{ crypto.currency }}</small>
 								</div>
 							</label>
@@ -213,7 +227,7 @@
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
-								<div class="text-light" v-show="crypto.high">{{ crypto.high }}</div>
+								<div class="text-light" v-show="crypto.high">{{ crypto.high | toCurrency(crypto.currency) }}</div>
 							</small>
 							<small class="text-muted">
 								<strong>Low</strong>
@@ -230,7 +244,7 @@
 									icon="circle-slash"
 									variant="danger"
 								></b-icon>
-								<div class="text-light" v-show="crypto.low">{{ crypto.low }}</div>
+								<div class="text-light" v-show="crypto.low">{{ crypto.low | toCurrency(crypto.currency) }}</div>
 							</small>
 							<small class="text-muted">
 								<strong>Vol</strong>
@@ -267,7 +281,7 @@
 								<div
 									class="text-light font-weight-bold"
 									v-show="crypto.last"
-								>{{ Number((crypto.quantity || 0) * crypto.last).toFixed(2) }}</div>
+								>{{ Number((crypto.quantity || 0) * crypto.last).toFixed(2) | toCurrency(crypto.currency) }}</div>
 							</small>
 						</div>
 					</b-list-group-item>
@@ -366,6 +380,9 @@ export default {
 		},
 		getSrcImage(symbol) {
 			return `/icons/${symbol}.png`;
+		},
+		exchangeCurrency() {
+			
 		}
 	},
 	async mounted() {
@@ -448,6 +465,13 @@ export default {
 				}
 			};
 			this.toggleBusy();
+
+			this.exchanges = await fetch(
+				`https://api.exchangerate-api.com/v4/latest/${localStorage.getItem(
+					"currencyLocal"
+				)}`
+			).then(res => res.json());
+
 			__mountStockList();
 			__mountCryptoList();
 			this.toggleBusy();

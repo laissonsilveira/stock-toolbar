@@ -9,8 +9,30 @@ import App from "./Popup.vue";
 global.browser = require("webextension-polyfill");
 Vue.prototype.$browser = global.browser;
 
+Vue.filter('toCurrency', function (
+	value,
+	currency = localStorage.getItem("currencyLocal"),
+	locale = navigator.language
+) {
+	try {
+		value = Number(value);
+		if (isNaN(value) || typeof value !== "number") {
+			return value;
+		}
+	} catch (err) {
+		console.error(err);
+		return value;
+	}
+	const formatter = new Intl.NumberFormat(locale, {
+		style: 'currency',
+		currency,
+		minimumFractionDigits: 0
+	});
+	return formatter.format(value);
+});
+
 /* eslint-disable no-new */
 new Vue({
-  el: "#app",
-  render: h => h(App)
+	el: "#app",
+	render: h => h(App)
 });

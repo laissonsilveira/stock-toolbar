@@ -30,7 +30,12 @@
 							description="We'll never share your email with anyone else."
 						>
 							<b-input-group>
-								<b-form-input type="email" v-model="email" placeholder="Enter your e-mail"></b-form-input>
+								<b-form-input
+									type="email"
+									v-model="email"
+									placeholder="Enter your e-mail"
+									:state="Boolean(email)"
+								></b-form-input>
 								<b-input-group-append>
 									<b-button variant="outline-info" type="submit">Save</b-button>
 									<!-- <b-button id="btn-google" type="button" variant="light">
@@ -43,9 +48,19 @@
 							</b-input-group>
 						</b-form-group>
 					</b-form>
-					<b-form-group label="Engine to stock detail:">
-						<b-form-select v-model="selectedEngine" :options="engines" @change="saveEngine"></b-form-select>
-					</b-form-group>
+					<b-row>
+						<b-col>
+							<b-form-group label="Engine to stock detail:">
+								<b-form-select v-model="selectedEngine" :options="engines" @change="saveEngine"></b-form-select>
+							</b-form-group>
+						</b-col>
+						<b-col>
+							<b-form-group label="Currency to total:">
+								<b-form-select v-model="currencyLocal" :options="currencies" @change="saveCurrencyTotal"></b-form-select>
+							</b-form-group>
+						</b-col>
+					</b-row>
+
 					<b-form-group label="Select yours stocks:">
 						<autocomplete
 							ref="stock"
@@ -56,6 +71,7 @@
 							placeholder="Search for some specific symbols or companies"
 							aria-label="Search for some specific symbols or companies"
 							:autoSelect="true"
+							:disabled="!email"
 						>
 							<template #result="{ result, props }">
 								<b-list-group v-bind="props" class="autocomplete-result">
@@ -171,6 +187,8 @@ export default {
 			totalRows: null,
 			selectedID: null,
 			selectedEngine: localStorage.getItem("selectedEngine"),
+			currencies: ["USD", "BRL"],
+			currencyLocal: localStorage.getItem("currencyLocal"),
 			engines: [
 				{
 					text: "Google",
@@ -211,6 +229,9 @@ export default {
 		};
 	},
 	methods: {
+		saveCurrencyTotal() {
+			localStorage.setItem("currencyLocal", this.currencyLocal);
+		},
 		async search(input) {
 			if (input.length < 3) {
 				return [];
