@@ -1,314 +1,19 @@
 <template>
 	<b-container>
 		<b-tabs small fill nav-class="bg-dark" active-nav-item-class="font-weight-bold bg-info">
-			<b-tab title="Stocks" title-link-class="text-light" title-item-class="outline-info" active>
-				<b-list-group>
-					<b-list-group-item
-						class="flex-column align-items-start bg-dark text-light"
-						href="#"
-						v-show="stocks.length === 0"
-					>
-						<div class="d-flex w-100 justify-content-between">
-							<h6 class="mb-1 symbol">Add yours Stocks in Options page</h6>
-							<b-button block variant="outline-info" @click="openOptionsPage">Go to options</b-button>
-						</div>
-					</b-list-group-item>
-					<b-list-group-item class="bg-dark" v-show="stocks.length > 0">
-						<div class="d-flex w-100 justify-content-between">
-							<label
-								class="font-weight-bold text-light"
-							>Total: {{ Number(getTotalStocks()).toFixed(2) | toCurrency }}</label>
-							<b-button size="sm" variant="outline-info" @click="openOptionsPage">Go to options</b-button>
-						</div>
-					</b-list-group-item>
-					<b-list-group-item
-						class="flex-column align-items-start bg-dark text-light"
-						v-for="stock in stocks"
-						:key="stock.symbol"
-						:href="localStorage.getItem('selectedEngine') + stock.symbol"
-						target="_blank"
-					>
-						<div class="d-flex w-100 justify-content-between">
-							<h6 class="mb-1 symbol text-info">{{ stock.symbol }}</h6>
-							<label class="text-muted">
-								<b-spinner
-									small
-									class="align-middle"
-									type="grow"
-									v-show="!stock.detail.price && !containsError"
-								></b-spinner>
-								<div v-show="containsError" class="text-light">No internet&nbsp;</div>
-								<div v-show="stock.detail.price">
-									<b-badge
-										:variant="getBadgeColor(stock.detail.changePercent)"
-										pill
-									>{{ stock.detail.changePercent }}%</b-badge>&nbsp;
-									<strong class="text-light">{{ stock.detail.price | toCurrency(stock.currency) }}</strong>
-									<small class="text-muted">{{ stock.currency }}</small>
-								</div>
-							</label>
-						</div>
-
-						<div class="d-flex w-100 justify-content-between">
-							<p class="mb-1 text-muted">{{ stock.name }}</p>
-							<small class="text-muted font-italic">{{ stock.date }}</small>
-							<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
-						</div>
-
-						<div class="d-flex w-100 justify-content-between text-light">
-							<small class="text-muted">
-								<strong>Open</strong>
-								<br />
-								<b-spinner
-									small
-									class="align-middle"
-									type="grow"
-									v-show="!stock.detail.open && !containsError"
-								></b-spinner>
-								<b-icon
-									class="font-weight-bold"
-									v-show="containsError"
-									icon="circle-slash"
-									variant="danger"
-								></b-icon>
-								<div
-									class="text-light price-detail"
-									v-show="stock.detail.open"
-								>{{ stock.detail.open | toCurrency }}</div>
-							</small>
-							<small class="text-muted">
-								<strong>High</strong>
-								<br />
-								<b-spinner
-									small
-									class="align-middle"
-									type="grow"
-									v-show="!stock.detail.high && !containsError"
-								></b-spinner>
-								<b-icon
-									class="font-weight-bold"
-									v-show="containsError"
-									icon="circle-slash"
-									variant="danger"
-								></b-icon>
-								<div
-									class="text-light price-detail"
-									v-show="stock.detail.high"
-								>{{ stock.detail.high | toCurrency }}</div>
-							</small>
-							<small class="text-muted">
-								<strong>Low</strong>
-								<br />
-								<b-spinner
-									small
-									class="align-middle"
-									type="grow"
-									v-show="!stock.detail.low && !containsError"
-								></b-spinner>
-								<b-icon
-									class="font-weight-bold"
-									v-show="containsError"
-									icon="circle-slash"
-									variant="danger"
-								></b-icon>
-								<div
-									class="text-light price-detail"
-									v-show="stock.detail.low"
-								>{{ stock.detail.low | toCurrency }}</div>
-							</small>
-							<small class="text-muted">
-								<strong>Vol</strong>
-								<br />
-								<b-spinner
-									small
-									class="align-middle"
-									type="grow"
-									v-show="!stock.detail.volume && !containsError"
-								></b-spinner>
-								<b-icon
-									class="font-weight-bold"
-									v-show="containsError"
-									icon="circle-slash"
-									variant="danger"
-								></b-icon>
-								<div class="text-light price-detail" v-show="stock.detail.volume">{{ stock.detail.volume }}</div>
-							</small>
-							<small class="text-muted">
-								<strong>Own</strong>
-								<br />
-								<b-spinner
-									small
-									class="align-middle"
-									type="grow"
-									v-show="!stock.detail.price && !containsError"
-								></b-spinner>
-								<b-icon
-									class="font-weight-bold"
-									v-show="containsError"
-									icon="circle-slash"
-									variant="danger"
-								></b-icon>
-								<div class="text-light font-weight-bold price-detail" v-show="stock.detail.price">
-									{{ getOwn(stock.quantity, stock.detail.price, stock.currency) | toCurrency }}
-									&nbsp;({{Number(stock.quantity).toFixed(2)}}un)
-								</div>
-							</small>
-						</div>
-					</b-list-group-item>
-				</b-list-group>
-			</b-tab>
-			<b-tab title="Cryptos" title-link-class="text-light" title-item-class="outline-info">
-				<b-list-group>
-					<b-list-group-item class="bg-dark">
-						<div class="d-flex w-100 justify-content-between">
-							<label
-								class="font-weight-bold text-light"
-							>Total: {{ Number(totalCryptos).toFixed(2) | toCurrency }}</label>
-							<b-button size="sm" variant="outline-info" @click="openOptionsPage">Go to options</b-button>
-						</div>
-					</b-list-group-item>
-					<b-list-group-item
-						class="flex-column align-items-start bg-dark text-light"
-						v-for="crypto in cryptos"
-						:key="crypto.id + crypto.exchange"
-						:href="crypto.url"
-						target="_blank"
-					>
-						<div class="d-flex w-100 justify-content-between">
-							<h6 class="mb-1 symbol text-info">
-								<b-img left :src="getSrcImage(crypto.symbol)" width="20" height="20"></b-img>
-								&nbsp;
-								{{ crypto.symbol }}
-							</h6>
-							<label class="text-muted">
-								<b-spinner
-									small
-									class="align-middle"
-									type="grow"
-									v-show="!crypto.last && !containsErrorCrypto"
-								></b-spinner>
-								<div v-show="containsErrorCrypto" class="text-light">No internet&nbsp;</div>
-								<div v-show="crypto.last">
-									<b-badge :variant="getBadgeColor(crypto.lastVariation)" pill>{{ crypto.lastVariation }}%</b-badge>&nbsp;
-									<strong class="text-light">{{ crypto.last | toCurrency(crypto.currency) }}</strong>
-									<small class="text-muted">{{ crypto.currency }}</small>
-								</div>
-							</label>
-						</div>
-
-						<div class="d-flex w-100 justify-content-between">
-							<p class="mb-1 text-muted">{{ crypto.exchange }}</p>
-							<small class="text-muted font-italic">
-								{{
-								crypto.createdDate
-								}}
-							</small>
-							<b-icon
-								class="font-weight-bold"
-								v-show="containsErrorCrypto"
-								icon="circle-slash"
-								variant="danger"
-							></b-icon>
-						</div>
-
-						<div class="d-flex w-100 justify-content-between text-light">
-							<small class="text-muted">
-								<strong>High</strong>
-								<br />
-								<b-spinner
-									small
-									class="align-middle"
-									type="grow"
-									v-show="!crypto.high && !containsErrorCrypto"
-								></b-spinner>
-								<b-icon
-									class="font-weight-bold"
-									v-show="containsErrorCrypto"
-									icon="circle-slash"
-									variant="danger"
-								></b-icon>
-								<div class="text-light price-detail" v-show="crypto.high">{{ crypto.high | toCurrency }}</div>
-							</small>
-							<small class="text-muted">
-								<strong>Low</strong>
-								<br />
-								<b-spinner
-									small
-									class="align-middle"
-									type="grow"
-									v-show="!crypto.low && !containsErrorCrypto"
-								></b-spinner>
-								<b-icon
-									class="font-weight-bold"
-									v-show="containsErrorCrypto"
-									icon="circle-slash"
-									variant="danger"
-								></b-icon>
-								<div class="text-light price-detail" v-show="crypto.low">{{ crypto.low | toCurrency }}</div>
-							</small>
-							<small class="text-muted">
-								<strong>Vol</strong>
-								<br />
-								<b-spinner
-									small
-									class="align-middle"
-									type="grow"
-									v-show="!crypto.vol && !containsErrorCrypto"
-								></b-spinner>
-								<b-icon
-									class="font-weight-bold"
-									v-show="containsErrorCrypto"
-									icon="circle-slash"
-									variant="danger"
-								></b-icon>
-								<div class="text-light price-detail" v-show="crypto.vol">{{ crypto.vol }}</div>
-							</small>
-							<small class="text-muted">
-								<strong>Own</strong>
-								<br />
-								<b-spinner
-									small
-									class="align-middle"
-									type="grow"
-									v-show="!crypto.last && !containsErrorCrypto"
-								></b-spinner>
-								<b-icon
-									class="font-weight-bold"
-									v-show="containsErrorCrypto"
-									icon="circle-slash"
-									variant="danger"
-								></b-icon>
-								<div class="text-light font-weight-bold price-detail" v-show="crypto.last">
-									{{ getOwn(crypto.quantity || 0, crypto.last, crypto.currency) | toCurrency }}
-									&nbsp;({{Number(crypto.quantity).toFixed(2)}}un)</div>
-							</small>
-						</div>
-					</b-list-group-item>
-				</b-list-group>
-			</b-tab>
+			<stock-tab></stock-tab>
+			<crypto-tab></crypto-tab>
 		</b-tabs>
 	</b-container>
 </template>
 
 <script>
-import StocksAPI from "../js/api-st";
-import moment from "moment";
-import StorageST from "../js/storage-st";
+import StockTab from "./StockTab";
+import CryptoTab from "./CryptoTab";
 export default {
-	data() {
-		return {
-			cryptos: [],
-			stocks: [],
-			isBusy: false,
-			posts: [],
-			selectedID: null,
-			fields: ["detail"],
-			localStorage,
-			containsError: false,
-			containsErrorCrypto: false,
-			totalStocks: 0,
-			totalCryptos: 0
-		};
+	components: {
+		StockTab,
+		CryptoTab
 	},
 	methods: {
 		toggleBusy() {
@@ -323,59 +28,11 @@ export default {
 				return "success";
 			}
 		},
-		getTotalStocks() {
-			let total = 0;
-			this.stocks.forEach(stock => {
-				if (stock.isEnabled && stock.detail && stock.detail.price)
-					total += stock.quantity * stock.detail.price;
-			});
-			return total;
-		},
-		async getStockDetail(symbol, key) {
-			try {
-				const attrib = "Global Quote";
-
-				const res = await StocksAPI.GLOBAL_QUOTE(symbol, key || null);
-				if (res.Note) {
-					let stock = JSON.parse(localStorage.getItem(symbol));
-					if (stock && stock.detail && stock.detail.open) {
-						const stockOld = this.stocks.find(
-							s => s.symbol === symbol
-						);
-						stockOld.date = stock.date;
-						stockOld.quantity = stock.quantity;
-						stockOld.detail = stock.detail;
-					}
-					setTimeout(() => this.getStockDetail(symbol, key), 60000);
-				} else {
-					const stock = this.stocks.find(s => s.symbol === symbol);
-					stock.date = moment().format("YYYY-MM-DD HH:mm:ss");
-					stock.detail = {
-						open: Number(res[attrib]["02. open"]).toFixed(2),
-						high: Number(res[attrib]["03. high"]).toFixed(2),
-						low: Number(res[attrib]["04. low"]).toFixed(2),
-						price: Number(res[attrib]["05. price"]).toFixed(2),
-						volume: res[attrib]["06. volume"],
-						change: Number(res[attrib]["09. change"]).toFixed(2),
-						changePercent: Number(
-							res[attrib]["10. change percent"].replace("%", "")
-						).toFixed(2)
-					};
-					localStorage.setItem(stock.symbol, JSON.stringify(stock));
-				}
-			} catch (error) {
-				console.error(error);
-				this.containsError = true;
-			}
-		},
 		openOptionsPage() {
 			chrome.runtime.openOptionsPage();
 		},
-		getSrcImage(symbol) {
-			return `/icons/${symbol}.png`;
-		},
 		exchangeCurrency(value, currency) {
-			return value * this.exchanges.rates[currency];
+			return value * JSON.parse(localStorage.getItem("exchanges")).rates[currency];
 		},
 		getOwn(quantity, price, currency) {
 			return Number(
@@ -383,97 +40,17 @@ export default {
 			).toFixed(2);
 		}
 	},
-	async mounted() {
-		if (await StorageST.has(StorageST.STOCKS_ST)) {
-			const __mountCryptoList = async () => {
-				this.cryptos = JSON.parse(
-					await StorageST.getValue(StorageST.CRYPTOS_ST)
-				);
-				fetch("https://watcher.foxbit.com.br/api/Ticker")
-					.then(response => response.json())
-					.then(cryptos => {
-						try {
-							for (const cryp of cryptos) {
-								const criptoFound = this.cryptos.find(
-									c =>
-										c.exchange === cryp.exchange &&
-										c.id === cryp.currency
-								);
-								if (criptoFound) {
-									criptoFound.high = Number(
-										cryp.high
-									).toFixed(2);
-									criptoFound.low = Number(cryp.low).toFixed(
-										2
-									);
-									criptoFound.last = Number(
-										cryp.last
-									).toFixed(2);
-									criptoFound.vol = Number(cryp.vol).toFixed(
-										2
-									);
-									criptoFound.lastVariation = Number(
-										cryp.lastVariation
-									).toFixed(2);
-									criptoFound.createdDate = moment(
-										cryp.createdDate
-									).format("YYYY-MM-DD HH:mm:ss");
-
-									this.totalCryptos +=
-										criptoFound.quantity * criptoFound.last;
-								}
-							}
-						} catch (error) {
-							console.error(error);
-							this.containsErrorCrypto = true;
-						}
-					});
-			};
-			const __mountStockList = async () => {
-				const stocks = JSON.parse(
-					await StorageST.getValue(StorageST.STOCKS_ST)
-				);
-				let index = 0;
-				for (const s of stocks) {
-					if (s.isEnabled) {
-						const {
-							"1. symbol": symbol,
-							"2. name": name,
-							"8. currency": currency,
-							quantity,
-							isEnabled
-						} = s;
-						const stock = {};
-						stock.symbol = symbol;
-						stock.name = name;
-						stock.currency = currency;
-						stock.quantity = quantity;
-						stock.isEnabled = isEnabled;
-						stock.detail = {};
-
-						this.stocks.push(stock);
-						setTimeout(() => {
-							this.getStockDetail(
-								symbol,
-								index < 5 && localStorage.getItem("keyST")
-							);
-							index++;
-						}, 100 * index);
-					}
-				}
-			};
-			this.toggleBusy();
-
-			this.exchanges = await fetch(
-				`https://api.exchangerate-api.com/v4/latest/${localStorage.getItem(
-					"currencyStock"
-				)}`
-			).then(res => res.json());
-
-			__mountStockList();
-			__mountCryptoList();
-			this.toggleBusy();
-		}
+	async created() {
+		localStorage.setItem(
+			"exchanges",
+			JSON.stringify(
+				await fetch(
+					`https://api.exchangerate-api.com/v4/latest/${localStorage.getItem(
+						"currencyStock"
+					)}`
+				).then(res => res.json())
+			)
+		);
 	}
 };
 </script>
