@@ -6,7 +6,7 @@
 					<label
 						class="font-weight-bold text-light"
 					>Total: {{ Number(totalCryptos).toFixed(2) | toCurrency }}</label>
-					<b-button size="sm" variant="outline-info" @click="$parent.openOptionsPage">Go to options</b-button>
+					<b-button size="sm" variant="outline-info" @click="$emit('openOptionsPage')">Go to options</b-button>
 				</div>
 			</b-list-group-item>
 			<b-list-group-item
@@ -26,7 +26,7 @@
 						<b-spinner small class="align-middle" type="grow" v-show="!crypto.last && !containsError"></b-spinner>
 						<div v-show="containsError" class="text-light">No internet&nbsp;</div>
 						<div v-show="crypto.last">
-							<b-badge :variant="$parent.getBadgeColor(crypto.lastVariation)" pill>{{ crypto.lastVariation }}%</b-badge>&nbsp;
+							<b-badge :variant="getBadgeColor(crypto.lastVariation)" pill>{{ crypto.lastVariation }}%</b-badge>&nbsp;
 							<strong class="text-light">{{ crypto.last | toCurrency(crypto.currency) }}</strong>
 							<small class="text-muted">{{ crypto.currency }}</small>
 						</div>
@@ -64,7 +64,7 @@
 						<b-spinner small class="align-middle" type="grow" v-show="!crypto.last && !containsError"></b-spinner>
 						<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
 						<div class="text-light font-weight-bold price-detail" v-show="crypto.last">
-							{{ $parent.getOwn(crypto.quantity || 0, crypto.last, crypto.currency) | toCurrency }}
+							{{ getOwn(crypto.quantity || 0, crypto.last, crypto.currency) | toCurrency }}
 							&nbsp;({{Number(crypto.quantity).toFixed(2)}}un)
 						</div>
 					</small>
@@ -91,12 +91,33 @@ export default {
 	methods: {
 		getSrcImage(symbol) {
 			return `/icons/${symbol}.png`;
-		}
+        },
+        _exchangeCurrency(val, currency) {
+			return (
+				val *
+				JSON.parse(localStorage.getItem("exchanges")).rates[currency]
+			);
+		},
+		getOwn(quantity, price, currency) {
+			console.log(quantity, price, currency);
+			if (!quantity || !price || !currency) return 0;
+			return Number(
+				quantity * this._exchangeCurrency(price, currency)
+			).toFixed(2);
+        },
+        getBadgeColor(percent) {
+			if (percent === "0.00") {
+				return "primary";
+			} else if (percent && percent.includes("-")) {
+				return "danger";
+			} else {
+				return "success";
+			}
+		},
 	},
 	async mounted() {
-        console.log(this.$parent);
 		if (await StorageST.has(StorageST.CRYPTOS_ST)) {
-			this.$parent.toggleBusy();
+			this.$emit('toggleBusy');
 
 			this.cryptos = JSON.parse(
 				await StorageST.getValue(StorageST.CRYPTOS_ST)
@@ -133,7 +154,7 @@ export default {
 					}
 				});
 
-			this.$parent.toggleBusy();
+			this.$emit('toggleBusy');
 		}
 	}
 };

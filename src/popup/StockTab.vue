@@ -8,7 +8,7 @@
 			>
 				<div class="d-flex w-100 justify-content-between">
 					<h6 class="mb-1 symbol">Add yours Stocks in Options page</h6>
-					<b-button block variant="outline-info" @click="$parent.openOptionsPage">Go to options</b-button>
+					<b-button block variant="outline-info" @click="$emit('openOptionsPage')">Go to options</b-button>
 				</div>
 			</b-list-group-item>
 			<b-list-group-item class="bg-dark" v-show="stocks.length > 0">
@@ -16,7 +16,7 @@
 					<label
 						class="font-weight-bold text-light"
 					>Total: {{ Number(getTotalStocks()).toFixed(2) | toCurrency }}</label>
-					<b-button size="sm" variant="outline-info" @click="$parent.openOptionsPage">Go to options</b-button>
+					<b-button size="sm" variant="outline-info" @click="$emit('openOptionsPage')">Go to options</b-button>
 				</div>
 			</b-list-group-item>
 			<b-list-group-item
@@ -38,7 +38,7 @@
 						<div v-show="containsError" class="text-light">No internet&nbsp;</div>
 						<div v-show="stock.detail.price">
 							<b-badge
-								:variant="$parent.getBadgeColor(stock.detail.changePercent)"
+								:variant="getBadgeColor(stock.detail.changePercent)"
 								pill
 							>{{ stock.detail.changePercent }}%</b-badge>&nbsp;
 							<strong class="text-light">{{ stock.detail.price | toCurrency(stock.currency) }}</strong>
@@ -110,7 +110,7 @@
 						></b-spinner>
 						<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
 						<div class="text-light font-weight-bold price-detail" v-show="stock.detail.price">
-							{{ $parent.getOwn(stock.quantity, stock.detail.price, stock.currency) | toCurrency }}
+							{{ getOwn(stock.quantity, stock.detail.price, stock.currency) | toCurrency }}
 							&nbsp;({{Number(stock.quantity).toFixed(2)}}un)
 						</div>
 					</small>
@@ -135,6 +135,28 @@ export default {
 		};
 	},
 	methods: {
+		_exchangeCurrency(val, currency) {
+			return (
+				val *
+				JSON.parse(localStorage.getItem("exchanges")).rates[currency]
+			);
+		},
+		getOwn(quantity, price, currency) {
+			console.log(quantity, price, currency);
+			if (!quantity || !price || !currency) return 0;
+			return Number(
+				quantity * this._exchangeCurrency(price, currency)
+			).toFixed(2);
+		},
+		getBadgeColor(percent) {
+			if (percent === "0.00") {
+				return "primary";
+			} else if (percent && percent.includes("-")) {
+				return "danger";
+			} else {
+				return "success";
+			}
+		},
 		getTotalStocks() {
 			let total = 0;
 			this.stocks.forEach(stock => {
@@ -183,7 +205,7 @@ export default {
 	},
 	async mounted() {
 		if (await StorageST.has(StorageST.STOCKS_ST)) {
-			this.$parent.toggleBusy();
+			this.$emit("toggleBusy");
 
 			const stocks = JSON.parse(
 				await StorageST.getValue(StorageST.STOCKS_ST)
@@ -217,7 +239,7 @@ export default {
 				}
 			}
 
-			this.$parent.toggleBusy();
+			this.$emit("toggleBusy");
 		}
 	}
 };

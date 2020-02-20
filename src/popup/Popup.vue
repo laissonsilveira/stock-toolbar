@@ -1,8 +1,14 @@
 <template>
 	<b-container>
 		<b-tabs small fill nav-class="bg-dark" active-nav-item-class="font-weight-bold bg-info">
-			<stock-tab></stock-tab>
-			<crypto-tab></crypto-tab>
+			<stock-tab
+				@openOptionsPage="openOptionsPage"
+				@toggleBusy="toggleBusy"
+			></stock-tab>
+			<crypto-tab
+				@openOptionsPage="openOptionsPage"
+				@toggleBusy="toggleBusy"
+			></crypto-tab>
 		</b-tabs>
 	</b-container>
 </template>
@@ -19,25 +25,8 @@ export default {
 		toggleBusy() {
 			this.isBusy = !this.isBusy;
 		},
-		getBadgeColor(percent) {
-			if (percent === "0.00") {
-				return "primary";
-			} else if (percent && percent.includes("-")) {
-				return "danger";
-			} else {
-				return "success";
-			}
-		},
 		openOptionsPage() {
 			chrome.runtime.openOptionsPage();
-		},
-		exchangeCurrency(value, currency) {
-			return value * JSON.parse(localStorage.getItem("exchanges")).rates[currency];
-		},
-		getOwn(quantity, price, currency) {
-			return Number(
-				quantity * this.exchangeCurrency(price, currency)
-			).toFixed(2);
 		}
 	},
 	async created() {
