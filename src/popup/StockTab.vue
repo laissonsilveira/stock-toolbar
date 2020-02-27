@@ -13,9 +13,7 @@
 			</b-list-group-item>
 			<b-list-group-item class="bg-dark" v-show="stocks.length > 0">
 				<div class="d-flex w-100 justify-content-between">
-					<label
-						class="font-weight-bold text-light"
-					>Total: {{ Number(getTotalStocks()).toFixed(2) | toCurrency }}</label>
+					<label class="font-weight-bold text-light">Total: {{ getTotalStocks() | toCurrency }}</label>
 					<b-button size="sm" variant="outline-info" @click="$emit('openOptionsPage')">Go to options</b-button>
 				</div>
 			</b-list-group-item>
@@ -41,8 +39,8 @@
 								:variant="getBadgeColor(stock.detail.changePercent)"
 								pill
 							>{{ stock.detail.changePercent }}%</b-badge>&nbsp;
-							<strong class="text-light">{{ stock.detail.price | toCurrency(stock.currency) }}</strong>
-							<small class="text-muted">{{ stock.currency }}</small>
+							<strong class="text-light">{{ stock.detail.price | exchangeCurrency(stock.currency) }}</strong>
+							<small class="text-muted">{{ localStorage.getItem("currencyStock") }}</small>
 						</div>
 					</label>
 				</div>
@@ -67,7 +65,7 @@
 						<div
 							class="text-light price-detail"
 							v-show="stock.detail.open"
-						>{{ stock.detail.open | toCurrency }}</div>
+						>{{ stock.detail.open | exchangeCurrency(stock.currency) }}</div>
 					</small>
 					<small class="text-muted">
 						<strong>High</strong>
@@ -82,7 +80,7 @@
 						<div
 							class="text-light price-detail"
 							v-show="stock.detail.high"
-						>{{ stock.detail.high | toCurrency }}</div>
+						>{{ stock.detail.high | exchangeCurrency(stock.currency) }}</div>
 					</small>
 					<small class="text-muted">
 						<strong>Low</strong>
@@ -97,7 +95,7 @@
 						<div
 							class="text-light price-detail"
 							v-show="stock.detail.low"
-						>{{ stock.detail.low | toCurrency }}</div>
+						>{{ stock.detail.low | exchangeCurrency(stock.currency) }}</div>
 					</small>
 					<small class="text-muted">
 						<strong>Own</strong>
@@ -110,7 +108,7 @@
 						></b-spinner>
 						<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
 						<div class="text-light font-weight-bold price-detail" v-show="stock.detail.price">
-							{{ getOwn(stock.quantity, stock.detail.price, stock.currency) | toCurrency }}
+							{{ getOwn(stock.quantity, stock.detail.price) | exchangeCurrency(stock.currency) }}
 							&nbsp;({{Number(stock.quantity).toFixed(2)}}un)
 						</div>
 					</small>
@@ -135,18 +133,9 @@ export default {
 		};
 	},
 	methods: {
-		_exchangeCurrency(val, currency) {
-			return (
-				val *
-				JSON.parse(localStorage.getItem("exchanges")).rates[currency]
-			);
-		},
-		getOwn(quantity, price, currency) {
-			console.log(quantity, price, currency);
-			if (!quantity || !price || !currency) return 0;
-			return Number(
-				quantity * this._exchangeCurrency(price, currency)
-			).toFixed(2);
+		getOwn(quantity, price) {
+			if (!quantity || !price) return 0;
+			return Number(quantity * price);
 		},
 		getBadgeColor(percent) {
 			if (percent === "0.00") {
@@ -161,9 +150,13 @@ export default {
 			let total = 0;
 			this.stocks.forEach(stock => {
 				if (stock.isEnabled && stock.detail && stock.detail.price)
-					total += stock.quantity * stock.detail.price;
+					total += this.$options.filters.exchangeCurrency(
+						stock.quantity * stock.detail.price,
+						stock.currency,
+						true
+					);
 			});
-			return total;
+			return Number(total).toFixed(2);
 		},
 		async getStockDetail(symbol, key) {
 			try {
@@ -185,15 +178,15 @@ export default {
 					const stock = this.stocks.find(s => s.symbol === symbol);
 					stock.date = moment().format("YYYY-MM-DD HH:mm:ss");
 					stock.detail = {
-						open: Number(res[attrib]["02. open"]).toFixed(2),
-						high: Number(res[attrib]["03. high"]).toFixed(2),
-						low: Number(res[attrib]["04. low"]).toFixed(2),
-						price: Number(res[attrib]["05. price"]).toFixed(2),
+						open: Number(res[attrib]["02. open"]),
+						high: Number(res[attrib]["03. high"]),
+						low: Number(res[attrib]["04. low"]),
+						price: Number(res[attrib]["05. price"]),
 						volume: res[attrib]["06. volume"],
-						change: Number(res[attrib]["09. change"]).toFixed(2),
+						change: Number(res[attrib]["09. change"]),
 						changePercent: Number(
 							res[attrib]["10. change percent"].replace("%", "")
-						).toFixed(2)
+						)
 					};
 					localStorage.setItem(stock.symbol, JSON.stringify(stock));
 				}

@@ -9,11 +9,16 @@ import App from "./Popup.vue";
 global.browser = require("webextension-polyfill");
 Vue.prototype.$browser = global.browser;
 
-Vue.filter('toCurrency', function (
-	value,
-	currency = localStorage.getItem("currencyStock"),
-	locale = navigator.language
-) {
+function _exchangeCurrency(val, currency, isTotal) {
+	if (!currency) return val;
+	const exchanges = JSON.parse(localStorage.getItem("exchanges"));
+	if (isTotal) return val / exchanges.rates[currency];
+	return Number(val / exchanges.rates[currency]).toFixed(2);
+}
+
+Vue.filter('exchangeCurrency', _exchangeCurrency);
+
+Vue.filter('toCurrency', function (value, currency, locale = navigator.languages) {
 	try {
 		value = Number(value);
 		if (isNaN(value) || typeof value !== "number") {
@@ -25,10 +30,10 @@ Vue.filter('toCurrency', function (
 	}
 	const formatter = new Intl.NumberFormat(locale, {
 		style: 'currency',
-		currency,
+		currency: localStorage.getItem("currencyStock"),
 		minimumFractionDigits: 0
 	});
-	return formatter.format(value);
+	return formatter.format(_exchangeCurrency(value, currency));
 });
 
 /* eslint-disable no-new */

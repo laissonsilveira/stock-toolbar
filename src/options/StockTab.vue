@@ -54,13 +54,7 @@
 								<b-form-select v-model="selectedEngine" :options="engines" @change="saveEngine"></b-form-select>
 							</b-form-group>
 						</b-col>
-						<b-col>
-							<b-form-group label="Currency:">
-								<b-form-select v-model="currencyStock" :options="currencies" @change="saveCurrencyStock"></b-form-select>
-							</b-form-group>
-						</b-col>
 					</b-row>
-
 					<b-form-group label="Select yours stocks:">
 						<autocomplete
 							ref="stock"
@@ -187,8 +181,6 @@ export default {
 			totalRows: null,
 			selectedID: null,
 			selectedEngine: localStorage.getItem("selectedEngine"),
-			currencies: ["USD", "BRL"],
-			currencyStock: localStorage.getItem("currencyStock"),
 			engines: [
 				{
 					text: "Google",
@@ -229,9 +221,6 @@ export default {
 		};
 	},
 	methods: {
-		saveCurrencyStock() {
-			localStorage.setItem("currencyStock", this.currencyStock);
-		},
 		async search(input) {
 			if (input.length < 3) {
 				return [];

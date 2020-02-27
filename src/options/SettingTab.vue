@@ -1,15 +1,21 @@
 <template>
 	<div>
-		<b-tab title="Import/Export">
+		<b-tab title="Settings">
 			<b-container>
 				<b-row>
 					<b-col>
-						<b-button variant="outline-info" @click="saveSettings">Export settings (Stocks and Cryptos)</b-button>
+						<b-form-group label="Currency:">
+							<b-form-select
+								v-model="currencyStock"
+								:options="currencies"
+								@change="saveCurrencyStock"
+							></b-form-select>
+						</b-form-group>
 					</b-col>
 				</b-row>
 				<hr />
 				<b-row>
-					<b-col sm="6">
+					<b-col sm="4">
 						<b-form-file
 							accept=".json"
 							v-model="settingFile"
@@ -17,12 +23,15 @@
 							drop-placeholder="Drop file here..."
 						></b-form-file>
 					</b-col>
-					<b-col sm="6">
+					<b-col sm="4">
 						<b-button
 							variant="outline-info"
 							@click="updateSettings"
 							:disabled="!settingFile"
 						>Import settings (Stocks and Cryptos)</b-button>
+					</b-col>
+					<b-col sm="4">
+						<b-button variant="outline-info" @click="saveSettings">Export settings (Stocks and Cryptos)</b-button>
 					</b-col>
 				</b-row>
 			</b-container>
@@ -37,10 +46,33 @@ export default {
 	name: "SettingTab",
 	data() {
 		return {
-			settingFile: null
+			settingFile: null,
+			currencies: [],
+			currencyStock: localStorage.getItem("currencyStock")
 		};
 	},
+	async created() {
+		const res = await this._getCurrencies();
+		this.currencies = [...new Set(res)].sort();
+	},
 	methods: {
+		async _getCurrencies() {
+			const currencies = ["USD"];
+
+			const result = await fetch(
+				"https://api.exchangerate-api.com/v4/latest/USD"
+			).then(res => res.json());
+
+			if (result) {
+				for (const key in result.rates) {
+					currencies.push(key);
+				}
+			}
+			return currencies;
+		},
+		saveCurrencyStock() {
+			localStorage.setItem("currencyStock", this.currencyStock);
+		},
 		async saveSettings() {
 			const stocks = await StorageST.getValue(StorageST.STOCKS_ST);
 			const cryptos = await StorageST.getValue(StorageST.CRYPTOS_ST);

@@ -3,9 +3,7 @@
 		<b-list-group>
 			<b-list-group-item class="bg-dark">
 				<div class="d-flex w-100 justify-content-between">
-					<label
-						class="font-weight-bold text-light"
-					>Total: {{ Number(totalCryptos).toFixed(2) | toCurrency }}</label>
+					<label class="font-weight-bold text-light">Total: {{ getTotalCryptos() | toCurrency }}</label>
 					<b-button size="sm" variant="outline-info" @click="$emit('openOptionsPage')">Go to options</b-button>
 				</div>
 			</b-list-group-item>
@@ -27,8 +25,8 @@
 						<div v-show="containsError" class="text-light">No internet&nbsp;</div>
 						<div v-show="crypto.last">
 							<b-badge :variant="getBadgeColor(crypto.lastVariation)" pill>{{ crypto.lastVariation }}%</b-badge>&nbsp;
-							<strong class="text-light">{{ crypto.last | toCurrency(crypto.currency) }}</strong>
-							<small class="text-muted">{{ crypto.currency }}</small>
+							<strong class="text-light">{{ crypto.last | exchangeCurrency(crypto.currency) }}</strong>
+							<small class="text-muted">{{ localStorage.getItem("currencyStock") }}</small>
 						</div>
 					</label>
 				</div>
@@ -49,14 +47,20 @@
 						<br />
 						<b-spinner small class="align-middle" type="grow" v-show="!crypto.high && !containsError"></b-spinner>
 						<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
-						<div class="text-light price-detail" v-show="crypto.high">{{ crypto.high | toCurrency }}</div>
+						<div
+							class="text-light price-detail"
+							v-show="crypto.high"
+						>{{ crypto.high | exchangeCurrency(crypto.currency) }}</div>
 					</small>
 					<small class="text-muted">
 						<strong>Low</strong>
 						<br />
 						<b-spinner small class="align-middle" type="grow" v-show="!crypto.low && !containsError"></b-spinner>
 						<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
-						<div class="text-light price-detail" v-show="crypto.low">{{ crypto.low | toCurrency }}</div>
+						<div
+							class="text-light price-detail"
+							v-show="crypto.low"
+						>{{ crypto.low | exchangeCurrency(crypto.currency) }}</div>
 					</small>
 					<small class="text-muted">
 						<strong>Own</strong>
@@ -64,7 +68,7 @@
 						<b-spinner small class="align-middle" type="grow" v-show="!crypto.last && !containsError"></b-spinner>
 						<b-icon class="font-weight-bold" v-show="containsError" icon="circle-slash" variant="danger"></b-icon>
 						<div class="text-light font-weight-bold price-detail" v-show="crypto.last">
-							{{ getOwn(crypto.quantity || 0, crypto.last, crypto.currency) | toCurrency }}
+							{{ getOwn(crypto.quantity || 0, crypto.last) | exchangeCurrency(crypto.currency) }}
 							&nbsp;({{Number(crypto.quantity).toFixed(2)}}un)
 						</div>
 					</small>
@@ -84,28 +88,30 @@ export default {
 			isBusy: false,
 			fields: ["detail"],
 			localStorage,
-			containsError: false,
-			totalCryptos: 0
+			containsError: false
 		};
 	},
 	methods: {
+		getTotalCryptos() {
+			let total = 0;
+			this.cryptos.forEach(crypto => {
+				if (crypto.last)
+					total += this.$options.filters.exchangeCurrency(
+						crypto.quantity * crypto.last,
+						crypto.currency,
+						true
+					);
+			});
+			return Number(total).toFixed(2);
+		},
 		getSrcImage(symbol) {
 			return `/icons/${symbol}.png`;
-        },
-        _exchangeCurrency(val, currency) {
-			return (
-				val *
-				JSON.parse(localStorage.getItem("exchanges")).rates[currency]
-			);
 		},
-		getOwn(quantity, price, currency) {
-			console.log(quantity, price, currency);
-			if (!quantity || !price || !currency) return 0;
-			return Number(
-				quantity * this._exchangeCurrency(price, currency)
-			).toFixed(2);
-        },
-        getBadgeColor(percent) {
+		getOwn(quantity, price) {
+			if (!quantity || !price) return 0;
+			return Number(quantity * price);
+		},
+		getBadgeColor(percent) {
 			if (percent === "0.00") {
 				return "primary";
 			} else if (percent && percent.includes("-")) {
@@ -113,11 +119,11 @@ export default {
 			} else {
 				return "success";
 			}
-		},
+		}
 	},
 	async mounted() {
 		if (await StorageST.has(StorageST.CRYPTOS_ST)) {
-			this.$emit('toggleBusy');
+			this.$emit("toggleBusy");
 
 			this.cryptos = JSON.parse(
 				await StorageST.getValue(StorageST.CRYPTOS_ST)
@@ -133,19 +139,16 @@ export default {
 									c.id === cryp.currency
 							);
 							if (criptoFound) {
-								criptoFound.high = Number(cryp.high).toFixed(2);
-								criptoFound.low = Number(cryp.low).toFixed(2);
-								criptoFound.last = Number(cryp.last).toFixed(2);
-								criptoFound.vol = Number(cryp.vol).toFixed(2);
+								criptoFound.high = Number(cryp.high);
+								criptoFound.low = Number(cryp.low);
+								criptoFound.last = Number(cryp.last);
+								criptoFound.vol = Number(cryp.vol);
 								criptoFound.lastVariation = Number(
 									cryp.lastVariation
-								).toFixed(2);
+								);
 								criptoFound.createdDate = moment(
 									cryp.createdDate
 								).format("YYYY-MM-DD HH:mm:ss");
-
-								this.totalCryptos +=
-									criptoFound.quantity * criptoFound.last;
 							}
 						}
 					} catch (error) {
@@ -154,7 +157,7 @@ export default {
 					}
 				});
 
-			this.$emit('toggleBusy');
+			this.$emit("toggleBusy");
 		}
 	}
 };
