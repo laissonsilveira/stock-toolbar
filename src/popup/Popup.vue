@@ -1,42 +1,32 @@
 <template>
 	<b-container>
 		<b-tabs small fill nav-class="bg-dark" active-nav-item-class="font-weight-bold bg-info">
-			<stock-tab
-				@openOptionsPage="openOptionsPage"
-				@toggleBusy="toggleBusy"
-			></stock-tab>
-			<crypto-tab
-				@openOptionsPage="openOptionsPage"
-				@toggleBusy="toggleBusy"
-			></crypto-tab>
+			<!-- <stock-tab @openOptionsPage="openOptionsPage"></stock-tab> -->
+			<crypto-tab @openOptionsPage="openOptionsPage"></crypto-tab>
 		</b-tabs>
 	</b-container>
 </template>
 
 <script>
-import StockTab from "./StockTab";
+// import StockTab from "./StockTab";
 import CryptoTab from "./CryptoTab";
 export default {
 	components: {
-		StockTab,
+		// StockTab,
 		CryptoTab
 	},
 	methods: {
-		toggleBusy() {
-			this.isBusy = !this.isBusy;
-		},
 		openOptionsPage() {
 			chrome.runtime.openOptionsPage();
 		}
 	},
 	async created() {
+		const URL = "https://api.exchangerate-api.com/v4/latest/";
 		localStorage.setItem(
 			"exchanges",
 			JSON.stringify(
 				await fetch(
-					`https://api.exchangerate-api.com/v4/latest/${localStorage.getItem(
-						"currencyStock"
-					)}`
+					`${URL}${localStorage.getItem("currencyStock")}`
 				).then(res => res.json())
 			)
 		);

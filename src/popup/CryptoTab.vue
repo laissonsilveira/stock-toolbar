@@ -85,7 +85,6 @@ export default {
 	data() {
 		return {
 			cryptos: [],
-			isBusy: false,
 			fields: ["detail"],
 			localStorage,
 			containsError: false
@@ -93,28 +92,30 @@ export default {
 	},
 	methods: {
 		getTotalCryptos() {
-			let total = 0;
-			this.cryptos.forEach(crypto => {
-				if (crypto.last)
-					total += this.$options.filters.exchangeCurrency(
-						crypto.quantity * crypto.last,
-						crypto.currency,
-						true
-					);
-			});
-			return Number(total).toFixed(2);
+			// let total = 0;
+			// this.cryptos.forEach(crypto => {
+			// 	if (crypto.last)
+			// 		total += this.$options.filters.exchangeCurrency(
+			// 			crypto.quantity * crypto.last,
+			// 			crypto.currency,
+			// 			true
+			// 		);
+			// });
+			// return Number(total).toFixed(2);
+			return 0;
 		},
 		getSrcImage(symbol) {
 			return `/icons/${symbol}.png`;
 		},
 		getOwn(quantity, price) {
-			if (!quantity || !price) return 0;
-			return Number(quantity * price);
+			// if (!quantity || !price) return 0;
+			// return Number(quantity * price);
+			return 0;
 		},
 		getBadgeColor(percent) {
-			if (percent === "0.00") {
+			if (percent == "0.00") {
 				return "primary";
-			} else if (percent && percent.includes("-")) {
+			} else if (percent && percent.toString().includes("-")) {
 				return "danger";
 			} else {
 				return "success";
@@ -123,41 +124,35 @@ export default {
 	},
 	async mounted() {
 		if (await StorageST.has(StorageST.CRYPTOS_ST)) {
-			this.$emit("toggleBusy");
 
 			this.cryptos = JSON.parse(
 				await StorageST.getValue(StorageST.CRYPTOS_ST)
 			);
-			fetch("https://watcher.foxbit.com.br/api/Ticker")
-				.then(response => response.json())
-				.then(cryptos => {
-					try {
-						for (const cryp of cryptos) {
-							const criptoFound = this.cryptos.find(
-								c =>
-									c.exchange === cryp.exchange &&
-									c.id === cryp.currency
-							);
-							if (criptoFound) {
-								criptoFound.high = Number(cryp.high);
-								criptoFound.low = Number(cryp.low);
-								criptoFound.last = Number(cryp.last);
-								criptoFound.vol = Number(cryp.vol);
-								criptoFound.lastVariation = Number(
-									cryp.lastVariation
-								);
-								criptoFound.createdDate = moment(
-									cryp.createdDate
-								).format("YYYY-MM-DD HH:mm:ss");
-							}
-						}
-					} catch (error) {
-						console.error(error);
-						this.containsError = true;
-					}
-				});
+			const URL = "https://watcher.foxbit.com.br/api/Ticker";
+			const cryps = await fetch(URL).then(response => response.json());
 
-			this.$emit("toggleBusy");
+			try {
+				for (const cryp of cryps) {
+					const criptoFound = this.cryptos.find(
+						c =>
+							c.exchange === cryp.exchange &&
+							c.id === cryp.currency
+					);
+					if (criptoFound) {
+						criptoFound.high = Number(cryp.high);
+						criptoFound.low = Number(cryp.low);
+						criptoFound.last = Number(cryp.last);
+						criptoFound.vol = Number(cryp.vol);
+						criptoFound.lastVariation = Number(cryp.lastVariation);
+						criptoFound.createdDate = moment(
+							cryp.createdDate
+						).format("YYYY-MM-DD HH:mm:ss");
+					}
+				}
+			} catch (error) {
+				console.error(error);
+				this.containsError = true;
+			}
 		}
 	}
 };

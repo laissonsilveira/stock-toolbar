@@ -126,7 +126,6 @@ export default {
 	data() {
 		return {
 			stocks: [],
-			isBusy: false,
 			fields: ["detail"],
 			localStorage,
 			containsError: false
@@ -138,9 +137,9 @@ export default {
 			return Number(quantity * price);
 		},
 		getBadgeColor(percent) {
-			if (percent === "0.00") {
+			if (percent == "0.00") {
 				return "primary";
-			} else if (percent && percent.includes("-")) {
+			} else if (percent && percent.toString().includes("-")) {
 				return "danger";
 			} else {
 				return "success";
@@ -198,7 +197,6 @@ export default {
 	},
 	async mounted() {
 		if (await StorageST.has(StorageST.STOCKS_ST)) {
-			this.$emit("toggleBusy");
 
 			const stocks = JSON.parse(
 				await StorageST.getValue(StorageST.STOCKS_ST)
@@ -231,8 +229,6 @@ export default {
 					}, 100 * index);
 				}
 			}
-
-			this.$emit("toggleBusy");
 		}
 	}
 };
