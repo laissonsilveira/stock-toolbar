@@ -1,10 +1,10 @@
 <template>
 	<div>
-		<b-tab title="Settings">
+		<b-tab title="Settings" title-link-class="text-light" title-item-class="outline-info" >
 			<b-container>
 				<b-row>
 					<b-col>
-						<b-form-group label="Currency:">
+						<b-form-group label="Currency:" class="text-light">
 							<b-form-select
 								v-model="currencyStock"
 								:options="currencies"
@@ -13,7 +13,7 @@
 						</b-form-group>
 					</b-col>
 				</b-row>
-				<hr />
+				<hr class="bg-light"/>
 				<b-row>
 					<b-col sm="4">
 						<b-form-file

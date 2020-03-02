@@ -1,8 +1,8 @@
 <template>
 	<div>
 		<b-container>
-			<b-card no-body>
-				<b-tabs content-class="mt-3" card>
+			<b-card no-body bg-variant="dark">
+				<b-tabs content-class="mt-3" card nav-class="bg-dark" active-nav-item-class="font-weight-bold bg-info">
 					<stock-tab></stock-tab>
 					<crypto-tab></crypto-tab>
 					<setting-tab></setting-tab>
@@ -33,6 +33,7 @@ export default {
 <style lang="scss">
 body {
 	padding-top: 50px;
+	background-color: #6c757d;
 }
 .page-item.active .page-link {
 	background-color: gray;

@@ -21,7 +21,7 @@
 				</div>
 			</div>
 		</b-modal>
-		<b-tab title="Cryptos">
+		<b-tab title="Cryptos" title-link-class="text-light" title-item-class="outline-info" >
 			<b-container>
 				<b-row class="mb-2">
 					<b-form-select
@@ -39,6 +39,7 @@
 							striped
 							hover
 							responsive
+							dark
 							:items="cryptos"
 							:fields="fields"
 							:current-page="currentPage"

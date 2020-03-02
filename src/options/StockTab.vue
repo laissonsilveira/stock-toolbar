@@ -21,14 +21,11 @@
 				</div>
 			</div>
 		</b-modal>
-		<b-tab title="Stocks" active>
+		<b-tab title="Stocks" title-link-class="text-light" title-item-class="outline-info" active>
 			<b-row>
 				<b-col>
 					<b-form v-on:submit.prevent="onSaveEmail">
-						<b-form-group
-							label="Email address:"
-							description="We'll never share your email with anyone else."
-						>
+						<b-form-group label="Email address:" class="text-light">
 							<b-input-group>
 								<b-form-input
 									type="email"
@@ -50,12 +47,12 @@
 					</b-form>
 					<b-row>
 						<b-col>
-							<b-form-group label="Engine to stock detail:">
+							<b-form-group label="Engine to stock detail:" class="text-light">
 								<b-form-select v-model="selectedEngine" :options="engines" @change="saveEngine"></b-form-select>
 							</b-form-group>
 						</b-col>
 					</b-row>
-					<b-form-group label="Select yours stocks:">
+					<b-form-group label="Select yours stocks:" class="text-light">
 						<autocomplete
 							ref="stock"
 							:search="search"
@@ -96,6 +93,7 @@
 						striped
 						hover
 						responsive
+						dark
 						:items="stocks"
 						:fields="fields"
 						:current-page="currentPage"
