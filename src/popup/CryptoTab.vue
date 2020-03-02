@@ -22,7 +22,7 @@
 					</h6>
 					<label class="text-muted">
 						<b-spinner small class="align-middle" type="grow" v-show="!crypto.last && !containsError"></b-spinner>
-						<div v-show="containsError" class="text-light">No internet&nbsp;</div>
+						<div v-show="containsError" class="text-light">Did something wrong happen&nbsp;</div>
 						<div v-show="crypto.last">
 							<b-badge :variant="getBadgeColor(crypto.lastVariation)" pill>{{ crypto.lastVariation }}%</b-badge>&nbsp;
 							<strong class="text-light">{{ crypto.last | exchangeCurrency(crypto.currency) }}</strong>
@@ -85,32 +85,29 @@ export default {
 	data() {
 		return {
 			cryptos: [],
-			fields: ["detail"],
 			localStorage,
 			containsError: false
 		};
 	},
 	methods: {
 		getTotalCryptos() {
-			// let total = 0;
-			// this.cryptos.forEach(crypto => {
-			// 	if (crypto.last)
-			// 		total += this.$options.filters.exchangeCurrency(
-			// 			crypto.quantity * crypto.last,
-			// 			crypto.currency,
-			// 			true
-			// 		);
-			// });
-			// return Number(total).toFixed(2);
-			return 0;
+			let total = 0;
+			this.cryptos.forEach(crypto => {
+				if (crypto.last)
+					total += this.$options.filters.exchangeCurrency(
+						crypto.quantity * crypto.last,
+						crypto.currency,
+						true
+					);
+			});
+			return Number(total).toFixed(2);
 		},
 		getSrcImage(symbol) {
 			return `/icons/${symbol}.png`;
 		},
 		getOwn(quantity, price) {
-			// if (!quantity || !price) return 0;
-			// return Number(quantity * price);
-			return 0;
+			if (!quantity || !price) return 0;
+			return Number(quantity * price);
 		},
 		getBadgeColor(percent) {
 			if (percent == "0.00") {
@@ -124,7 +121,6 @@ export default {
 	},
 	async mounted() {
 		if (await StorageST.has(StorageST.CRYPTOS_ST)) {
-
 			this.cryptos = JSON.parse(
 				await StorageST.getValue(StorageST.CRYPTOS_ST)
 			);
@@ -147,6 +143,7 @@ export default {
 						criptoFound.createdDate = moment(
 							cryp.createdDate
 						).format("YYYY-MM-DD HH:mm:ss");
+						this.$forceUpdate();
 					}
 				}
 			} catch (error) {

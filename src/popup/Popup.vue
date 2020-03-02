@@ -1,18 +1,18 @@
 <template>
 	<b-container>
 		<b-tabs small fill nav-class="bg-dark" active-nav-item-class="font-weight-bold bg-info">
-			<!-- <stock-tab @openOptionsPage="openOptionsPage"></stock-tab> -->
+			<stock-tab @openOptionsPage="openOptionsPage"></stock-tab>
 			<crypto-tab @openOptionsPage="openOptionsPage"></crypto-tab>
 		</b-tabs>
 	</b-container>
 </template>
 
 <script>
-// import StockTab from "./StockTab";
+import StockTab from "./StockTab";
 import CryptoTab from "./CryptoTab";
 export default {
 	components: {
-		// StockTab,
+		StockTab,
 		CryptoTab
 	},
 	methods: {

@@ -33,7 +33,7 @@
 							type="grow"
 							v-show="!stock.detail.price && !containsError"
 						></b-spinner>
-						<div v-show="containsError" class="text-light">No internet&nbsp;</div>
+						<div v-show="containsError" class="text-light">Did something wrong happen&nbsp;</div>
 						<div v-show="stock.detail.price">
 							<b-badge
 								:variant="getBadgeColor(stock.detail.changePercent)"
@@ -126,7 +126,6 @@ export default {
 	data() {
 		return {
 			stocks: [],
-			fields: ["detail"],
 			localStorage,
 			containsError: false
 		};
@@ -197,7 +196,6 @@ export default {
 	},
 	async mounted() {
 		if (await StorageST.has(StorageST.STOCKS_ST)) {
-
 			const stocks = JSON.parse(
 				await StorageST.getValue(StorageST.STOCKS_ST)
 			);
