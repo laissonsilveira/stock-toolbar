@@ -184,7 +184,7 @@ export default {
 						change: Number(res[attrib]["09. change"]),
 						changePercent: Number(
 							res[attrib]["10. change percent"].replace("%", "")
-						)
+						).toFixed(2)
 					};
 					localStorage.setItem(stock.symbol, JSON.stringify(stock));
 				}

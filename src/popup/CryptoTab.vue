@@ -139,7 +139,7 @@ export default {
 						criptoFound.low = Number(cryp.low);
 						criptoFound.last = Number(cryp.last);
 						criptoFound.vol = Number(cryp.vol);
-						criptoFound.lastVariation = Number(cryp.lastVariation);
+						criptoFound.lastVariation = Number(cryp.lastVariation).toFixed(2);
 						criptoFound.createdDate = moment(
 							cryp.createdDate
 						).format("YYYY-MM-DD HH:mm:ss");
