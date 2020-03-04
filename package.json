@@ -1,6 +1,6 @@
 {
   "name": "stocks-toolbar",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Toolbar to Google Chrome with your stocks",
   "author": "Laisson R. Silveira <laisson.r.silveira@gmail.com>",
   "engines": {

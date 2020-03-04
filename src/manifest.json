@@ -1,41 +1,40 @@
 {
-	"name": "__MSG_name_extension__",
-	"short_name": "Stocks/Cryptos",
-	"description": "__MSG_description_extension__",
-	"default_locale": "en",
-	"version": "1.0.0",
-	"manifest_version": 2,
-	"minimum_chrome_version": "72",
-	"options_page": "options/options.html",
-	"icons": {
-		"16": "icons/icon_16.png",
-		"48": "icons/icon_48.png",
-		"128": "icons/icon_128.png"
-	},
-	"background": {
-		"scripts": [
-			"background.js"
-		]
-	},
-	"browser_action": {
-		"default_icon": "icons/icon_48.png",
-		"default_title": "Popup",
-		"default_popup": "popup/popup.html"
-	},
-	"permissions": [
-		"notifications",
-		"contextMenus",
-		"webRequest",
-		"storage",
-		"unlimitedStorage",
-		"https://www.alphavantage.co/",
-		"https://watcher.foxbit.com.br/api/Ticker",
-		"https://api.exchangerate-api.com/",
-		"webRequestBlocking",
-		"identity",
-		"identity.email"
-	],
-	"web_accessible_resources": [
-		"icons/icon_48.png"
-	]
+    "name": "__MSG_name_extension__",
+    "short_name": "Stocks/Cryptos",
+    "description": "__MSG_description_extension__",
+    "default_locale": "en",
+    "version": "1.0.1",
+    "manifest_version": 2,
+    "minimum_chrome_version": "72",
+    "options_page": "options/options.html",
+    "icons": {
+        "16": "icons/icon_16.png",
+        "48": "icons/icon_48.png",
+        "128": "icons/icon_128.png"
+    },
+    "background": {
+        "scripts": [
+            "background.js"
+        ]
+    },
+    "browser_action": {
+        "default_icon": "icons/icon_48.png",
+        "default_title": "Popup",
+        "default_popup": "popup/popup.html"
+    },
+    "permissions": [
+        "notifications",
+        "webRequest",
+        "storage",
+        "unlimitedStorage",
+        "https://www.alphavantage.co/",
+        "https://watcher.foxbit.com.br/api/Ticker",
+        "https://api.exchangerate-api.com/",
+        "webRequestBlocking",
+        "identity",
+        "identity.email"
+    ],
+    "web_accessible_resources": [
+        "icons/icon_48.png"
+    ]
 }

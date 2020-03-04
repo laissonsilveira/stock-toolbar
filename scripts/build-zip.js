@@ -9,6 +9,9 @@ const DEST_ZIP_DIR = path.join(__dirname, '../dist-zip');
 
 const extractExtensionData = () => {
 	const { name, version } = require('../package.json');
+	const manifest = require('../src/manifest');
+	manifest.version = version;
+	fs.writeFileSync(`${__dirname}/../src/manifest.json`, JSON.stringify(manifest, null, 4));
 	return { name, version };
 };
 
