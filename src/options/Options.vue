@@ -1,8 +1,13 @@
 <template>
 	<div>
 		<b-container>
-			<b-card no-body bg-variant="dark">
-				<b-tabs content-class="mt-3" card nav-class="bg-dark" active-nav-item-class="font-weight-bold bg-info">
+			<b-card no-body bg-variant="dark" style="min-height: 455px;">
+				<b-tabs
+					content-class="mt-3"
+					card
+					nav-class="bg-dark"
+					active-nav-item-class="font-weight-bold bg-info"
+				>
 					<stock-tab></stock-tab>
 					<crypto-tab></crypto-tab>
 					<setting-tab></setting-tab>

@@ -21,14 +21,16 @@
 				</div>
 			</div>
 		</b-modal>
-		<b-tab title="Cryptos" title-link-class="text-light" title-item-class="outline-info" >
+		<b-tab title="Cryptos" title-link-class="text-light" title-item-class="outline-info">
 			<b-container>
 				<b-row class="mb-2">
-					<b-form-select
-						v-model="selectedCrypto"
-						:options="exchanges"
-						@change="onSelectCrypto(selectedCrypto)"
-					></b-form-select>
+					<b-col>
+						<b-form-select
+							v-model="selectedCrypto"
+							:options="exchanges"
+							@change="onSelectCrypto(selectedCrypto)"
+						></b-form-select>
+					</b-col>
 				</b-row>
 				<b-row>
 					<b-col>
@@ -40,6 +42,7 @@
 							hover
 							responsive
 							dark
+							bordered
 							:items="cryptos"
 							:fields="fields"
 							:current-page="currentPage"

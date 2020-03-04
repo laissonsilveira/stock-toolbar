@@ -59,8 +59,8 @@
 							:get-result-value="getResultValue"
 							@submit="handleSubmit"
 							:debounce-time="500"
-							placeholder="Search for some specific symbols or companies"
-							aria-label="Search for some specific symbols or companies"
+							placeholder="Search for symbols or companies"
+							aria-label="Search for symbols or companies"
 							:autoSelect="true"
 							:disabled="!email"
 						>
@@ -94,6 +94,7 @@
 						hover
 						responsive
 						dark
+						bordered
 						:items="stocks"
 						:fields="fields"
 						:current-page="currentPage"
@@ -387,5 +388,20 @@ export default {
 }
 .col-quantity-stock {
 	min-width: 120px;
+}
+
+.autocomplete-result {
+	color: #212529;
+}
+
+.autocomplete-result:hover,
+.autocomplete-result[aria-selected="true"] {
+	background-color: #6c757d;
+}
+
+.autocomplete[data-loading="true"]:after {
+	background-color: transparent;
+	border: 3px solid #17a2b8;
+	border-right-color: #ffffff;
 }
 </style>

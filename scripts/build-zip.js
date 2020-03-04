@@ -8,12 +8,8 @@ const DEST_DIR = path.join(__dirname, '../dist');
 const DEST_ZIP_DIR = path.join(__dirname, '../dist-zip');
 
 const extractExtensionData = () => {
-	const extPackageJson = require('../package.json');
-
-	return {
-		name: extPackageJson.name,
-		version: extPackageJson.version
-	};
+	const { name, version } = require('../package.json');
+	return { name, version };
 };
 
 const makeDestZipDirIfNotExists = () => {
